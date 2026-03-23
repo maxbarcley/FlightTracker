@@ -407,6 +407,49 @@ const FlightTimeline = ({ status }) => {
 };
 
 /* ══════════════════════════════════════════════════════════
+   GLOBE SHADER + SUN HELPERS
+══════════════════════════════════════════════════════════ */
+const DAY_NIGHT_VERT = `
+  varying vec3 vWorldNormal;
+  varying vec2 vUv;
+  void main() {
+    vWorldNormal = normalize(mat3(modelMatrix) * normal);
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const DAY_NIGHT_FRAG = `
+  uniform sampler2D dayTex;
+  uniform sampler2D nightTex;
+  uniform vec3 sunDir;
+  varying vec3 vWorldNormal;
+  varying vec2 vUv;
+  void main() {
+    float cosA = dot(normalize(vWorldNormal), normalize(sunDir));
+    float blend = smoothstep(-0.12, 0.12, cosA);
+    vec4 night = texture2D(nightTex, vUv);
+    vec4 day   = texture2D(dayTex,   vUv);
+    gl_FragColor = mix(night * 1.1, day, blend);
+  }
+`;
+
+function calcSunDir(earthGroup) {
+  const now = new Date();
+  const dayOfYear = (now - new Date(now.getFullYear(), 0, 0)) / 86400000;
+  const declRad = -23.45 * Math.cos(2 * Math.PI / 365 * (dayOfYear + 10)) * Math.PI / 180;
+  const utcH = now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600;
+  const sunLng = (12 - utcH) * 15;
+  const phi   = Math.PI / 2 - declRad;
+  const theta = (sunLng + 180) * Math.PI / 180;
+  const obj = new THREE.Vector3(
+    -Math.sin(phi) * Math.cos(theta),
+     Math.cos(phi),
+     Math.sin(phi) * Math.sin(theta)
+  );
+  return obj.applyEuler(earthGroup.rotation);
+}
+
+/* ══════════════════════════════════════════════════════════
    TRIPS SCREEN
 ══════════════════════════════════════════════════════════ */
 /* ══════════════════════════════════════════════════════════
@@ -434,23 +477,32 @@ const MiniGlobe = ({ flights }) => {
     camera.position.set(0, 0, 2.6);
     camera.lookAt(0, 0, 0);
 
-    scene.add(new THREE.AmbientLight(0x334466, 2.2));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-    sun.position.set(5, 3, 5);
-    scene.add(sun);
+    scene.add(new THREE.AmbientLight(0x111122, 0.4));
 
     const earthGroup = new THREE.Group();
     earthGroup.rotation.y = 0.52;
     scene.add(earthGroup);
 
-    const globeGeo = new THREE.SphereGeometry(1, 48, 48);
-    const globeMat = new THREE.MeshPhongMaterial({ color: 0x1a3055, shininess: 8, specular: new THREE.Color(0x112244) });
-    earthGroup.add(new THREE.Mesh(globeGeo, globeMat));
-    new THREE.TextureLoader().load(
-      'https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-night.jpg',
-      (tex) => { globeMat.map = tex; globeMat.color.set(0xffffff); globeMat.needsUpdate = true; },
-      undefined, () => {}
-    );
+    const globeUniforms = {
+      dayTex:   { value: null },
+      nightTex: { value: null },
+      sunDir:   { value: new THREE.Vector3(1, 0, 0) },
+    };
+    const globeMat = new THREE.ShaderMaterial({
+      uniforms: globeUniforms,
+      vertexShader: DAY_NIGHT_VERT,
+      fragmentShader: DAY_NIGHT_FRAG,
+    });
+    earthGroup.add(new THREE.Mesh(new THREE.SphereGeometry(1, 48, 48), globeMat));
+    stateRef.current.globeUniforms = globeUniforms;
+    stateRef.current.earthGroup    = earthGroup;
+
+    const loader = new THREE.TextureLoader();
+    loader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-day.jpg',
+      tex => { globeUniforms.dayTex.value = tex; }, undefined, () => {});
+    loader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-night.jpg',
+      tex => { globeUniforms.nightTex.value = tex; }, undefined, () => {});
+
     scene.add(new THREE.Mesh(
       new THREE.SphereGeometry(1.08, 32, 32),
       new THREE.MeshPhongMaterial({ color: 0x4488cc, transparent: true, opacity: 0.08, side: THREE.BackSide })
@@ -488,22 +540,48 @@ const MiniGlobe = ({ flights }) => {
       }
     });
 
-    let isDragging = false, prevX = 0;
+    let isDragging = false, prevX = 0, prevY = 0, pinchDist = 0;
     stateRef.current.autoSpin = true;
-    const onDown = (e) => { isDragging = true; stateRef.current.autoSpin = false; prevX = e.clientX || e.touches?.[0]?.clientX || 0; };
-    const onMove = (e) => { if (!isDragging) return; const cx = e.clientX || e.touches?.[0]?.clientX || 0; earthGroup.rotation.y += (cx - prevX) * 0.008; prevX = cx; };
-    const onUp = () => { isDragging = false; };
-    renderer.domElement.addEventListener('mousedown', onDown);
+
+    const onDown = (e) => {
+      if (e.touches && e.touches.length === 2) return;
+      isDragging = true; stateRef.current.autoSpin = false;
+      prevX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+      prevY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+    };
+    const onMove = (e) => {
+      if (e.touches && e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const d  = Math.sqrt(dx*dx + dy*dy);
+        if (pinchDist > 0) camera.position.z = Math.max(1.4, Math.min(5, camera.position.z - (d - pinchDist) * 0.012));
+        pinchDist = d; return;
+      }
+      pinchDist = 0;
+      if (!isDragging) return;
+      const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+      const cy = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+      earthGroup.rotation.y += (cx - prevX) * 0.008;
+      prevX = cx; prevY = cy;
+    };
+    const onUp = () => { isDragging = false; pinchDist = 0; };
+    const onWheel = (e) => { e.preventDefault(); camera.position.z = Math.max(1.4, Math.min(5, camera.position.z + e.deltaY * 0.004)); };
+
+    renderer.domElement.addEventListener('mousedown',  onDown);
     renderer.domElement.addEventListener('touchstart', onDown, { passive: true });
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('touchmove', onMove, { passive: true });
-    window.addEventListener('mouseup', onUp);
-    window.addEventListener('touchend', onUp);
+    renderer.domElement.addEventListener('wheel',      onWheel, { passive: false });
+    window.addEventListener('mousemove',  onMove);
+    window.addEventListener('touchmove',  onMove, { passive: true });
+    window.addEventListener('mouseup',    onUp);
+    window.addEventListener('touchend',   onUp);
 
     let animId;
     const animate = () => {
       animId = requestAnimationFrame(animate);
       if (stateRef.current.autoSpin) earthGroup.rotation.y += 0.0022;
+      if (stateRef.current.globeUniforms) {
+        stateRef.current.globeUniforms.sunDir.value.copy(calcSunDir(earthGroup));
+      }
       (stateRef.current.sweeps || []).forEach(s => {
         s.prog = (s.prog + s.speed) % 1.1;
         const end = Math.min(Math.floor(s.prog * s.pts.length), s.pts.length - 1);
@@ -516,12 +594,13 @@ const MiniGlobe = ({ flights }) => {
 
     return () => {
       cancelAnimationFrame(animId);
-      renderer.domElement.removeEventListener('mousedown', onDown);
+      renderer.domElement.removeEventListener('mousedown',  onDown);
       renderer.domElement.removeEventListener('touchstart', onDown);
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('touchmove', onMove);
-      window.removeEventListener('mouseup', onUp);
-      window.removeEventListener('touchend', onUp);
+      renderer.domElement.removeEventListener('wheel',      onWheel);
+      window.removeEventListener('mousemove',  onMove);
+      window.removeEventListener('touchmove',  onMove);
+      window.removeEventListener('mouseup',    onUp);
+      window.removeEventListener('touchend',   onUp);
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
       renderer.dispose();
       stateRef.current = {};
@@ -1132,9 +1211,8 @@ const MapScreen = ({ onNavigate }) => {
     const el = mountRef.current;
     if (!el || stateRef.current.renderer) return;
 
-    // Device shell is 393×852; subtract status(54) + tabs(60) + home(34) = 704px screen height
-    const W = 393;
-    const H = 704;
+    const W = el.clientWidth  || window.innerWidth;
+    const H = el.clientHeight || window.innerHeight;
 
     /* ── Renderer ─────────────────────────────────── */
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -1151,11 +1229,8 @@ const MapScreen = ({ onNavigate }) => {
     camera.position.set(0, 0, 2.8);
     camera.lookAt(0, 0, 0);
 
-    /* ── Lighting (in scene space, not group) ─────── */
-    scene.add(new THREE.AmbientLight(0x334466, 2.2));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-    sun.position.set(5, 3, 5);
-    scene.add(sun);
+    /* ── Minimal ambient for atmosphere glow only ── */
+    scene.add(new THREE.AmbientLight(0x111122, 0.3));
 
     /* ── Rotating group: globe + arcs + markers ───── */
     // Everything inside rotates together so arcs stay on the surface
@@ -1165,28 +1240,30 @@ const MapScreen = ({ onNavigate }) => {
     scene.add(earthGroup);
 
     /* ── Globe sphere ─────────────────────────────── */
-    const globeGeo = new THREE.SphereGeometry(1, 64, 64);
-    const globeMat = new THREE.MeshPhongMaterial({
-      color:      0x1a3055,
-      shininess:  8,
-      specular:   new THREE.Color(0x112244),
+    const globeUniforms = {
+      dayTex:   { value: null },
+      nightTex: { value: null },
+      sunDir:   { value: new THREE.Vector3(1, 0, 0) },
+    };
+    const globeMat = new THREE.ShaderMaterial({
+      uniforms: globeUniforms,
+      vertexShader: DAY_NIGHT_VERT,
+      fragmentShader: DAY_NIGHT_FRAG,
     });
-    const globe = new THREE.Mesh(globeGeo, globeMat);
-    earthGroup.add(globe);
+    earthGroup.add(new THREE.Mesh(new THREE.SphereGeometry(1, 64, 64), globeMat));
+    stateRef.current.globeUniforms = globeUniforms;
 
-    // Load NASA night-lights texture (async — falls back to deep blue)
-    new THREE.TextureLoader().load(
-      'https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-night.jpg',
-      (tex) => { globeMat.map = tex; globeMat.color.set(0xffffff); globeMat.needsUpdate = true; },
-      undefined,
-      () => {}
-    );
+    const loader = new THREE.TextureLoader();
+    loader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-day.jpg',
+      tex => { globeUniforms.dayTex.value = tex; }, undefined, () => {});
+    loader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-night.jpg',
+      tex => { globeUniforms.nightTex.value = tex; }, undefined, () => {});
 
-    /* ── Atmosphere glow (in scene, not group — always faces camera) ── */
-    const atmMat = new THREE.MeshPhongMaterial({
-      color: 0x4488cc, transparent: true, opacity: 0.10, side: THREE.BackSide,
-    });
-    scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.12, 32, 32), atmMat));
+    /* ── Atmosphere glow ── */
+    scene.add(new THREE.Mesh(
+      new THREE.SphereGeometry(1.12, 32, 32),
+      new THREE.MeshPhongMaterial({ color: 0x4488cc, transparent: true, opacity: 0.10, side: THREE.BackSide })
+    ));
 
     /* ── Airport markers (inside earthGroup so they rotate with globe) ── */
     const dotMat  = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -1234,25 +1311,37 @@ const MapScreen = ({ onNavigate }) => {
       }
     });
 
-    /* ── Drag-to-rotate ───────────────────────────── */
-    let isDragging = false, prevX = 0, prevY = 0;
+    /* ── Drag-to-rotate + zoom ────────────────────── */
+    let isDragging = false, prevX = 0, prevY = 0, pinchDist = 0;
     let autoSpin = true;
     const onDown = (e) => {
+      if (e.touches && e.touches.length === 2) return;
       isDragging = true; autoSpin = false;
-      prevX = e.clientX || e.touches?.[0]?.clientX || 0;
-      prevY = e.clientY || e.touches?.[0]?.clientY || 0;
+      prevX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+      prevY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
     };
     const onMove = (e) => {
+      if (e.touches && e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const d  = Math.sqrt(dx*dx + dy*dy);
+        if (pinchDist > 0) camera.position.z = Math.max(1.4, Math.min(6, camera.position.z - (d - pinchDist) * 0.012));
+        pinchDist = d; return;
+      }
+      pinchDist = 0;
       if (!isDragging) return;
-      const cx = e.clientX || e.touches?.[0]?.clientX || 0;
-      const cy = e.clientY || e.touches?.[0]?.clientY || 0;
+      const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+      const cy = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
       earthGroup.rotation.y += (cx - prevX) * 0.006;
       earthGroup.rotation.x  = Math.max(-1.1, Math.min(1.1, earthGroup.rotation.x + (cy - prevY) * 0.004));
       prevX = cx; prevY = cy;
     };
-    const onUp = () => { isDragging = false; };
+    const onUp = () => { isDragging = false; pinchDist = 0; };
+    const onWheel = (e) => { e.preventDefault(); camera.position.z = Math.max(1.4, Math.min(6, camera.position.z + e.deltaY * 0.004)); };
+
     renderer.domElement.addEventListener('mousedown',  onDown);
     renderer.domElement.addEventListener('touchstart', onDown, { passive: true });
+    renderer.domElement.addEventListener('wheel',      onWheel, { passive: false });
     window.addEventListener('mousemove',  onMove);
     window.addEventListener('touchmove',  onMove, { passive: true });
     window.addEventListener('mouseup',    onUp);
@@ -1266,7 +1355,10 @@ const MapScreen = ({ onNavigate }) => {
       animId = requestAnimationFrame(animate);
       if (autoSpin) earthGroup.rotation.y += 0.0022;
 
-      // Arc sweep animation
+      if (stateRef.current.globeUniforms) {
+        stateRef.current.globeUniforms.sunDir.value.copy(calcSunDir(earthGroup));
+      }
+
       (stateRef.current.sweeps || []).forEach(s => {
         s.prog = (s.prog + s.speed) % 1.1;
         const end = Math.min(Math.floor(s.prog * s.pts.length), s.pts.length - 1);
@@ -1287,6 +1379,7 @@ const MapScreen = ({ onNavigate }) => {
       cancelAnimationFrame(animId);
       renderer.domElement.removeEventListener('mousedown',  onDown);
       renderer.domElement.removeEventListener('touchstart', onDown);
+      renderer.domElement.removeEventListener('wheel',      onWheel);
       window.removeEventListener('mousemove',  onMove);
       window.removeEventListener('touchmove',  onMove);
       window.removeEventListener('mouseup',    onUp);
