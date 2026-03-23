@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FlightOS — Interactive Mockup</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { background:#060610; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif; }
+
+.device-shell {
+  width:393px; height:852px; background:#0a0a0f; border-radius:54px;
+  box-shadow:0 0 0 2px #2a2a3a,0 0 0 10px #111118,0 40px 80px rgba(0,0,0,0.9),inset 0 0 0 1px #1a1a2a;
+  overflow:hidden; position:relative; display:flex; flex-direction:column;
+}
+.notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:34px; background:#0a0a0f; border-radius:0 0 20px 20px; z-index:200; }
+.status-bar { height:54px; display:flex; align-items:flex-end; justify-content:space-between; padding:0 28px 8px; flex-shrink:0; z-index:10; }
+.status-time { font-size:15px; font-weight:600; color:#fff; }
+.status-icons { display:flex; gap:6px; align-items:center; color:#fff; font-size:11px; }
+.home-indicator { height:34px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.home-indicator-bar { width:134px; height:5px; background:rgba(255,255,255,0.3); border-radius:3px; }
+
+.screen { flex:1; overflow:hidden; position:relative; display:flex; flex-direction:column; }
+.nav-bar { padding:0 20px 12px; display:flex; align-items:center; min-height:52px; flex-shrink:0; z-index:10; }
+.nav-back { color:#4da6ff; font-size:15px; cursor:pointer; padding:8px 0; }
+.nav-title { flex:1; text-align:center; font-size:17px; font-weight:600; color:#fff; }
+.nav-action { color:#4da6ff; font-size:14px; cursor:pointer; }
+
+.scroll { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.scroll::-webkit-scrollbar { display:none; }
+
+.tab-bar {
+  height:60px; background:rgba(8,8,18,0.98); border-top:1px solid rgba(255,255,255,0.08);
+  display:flex; align-items:center; padding:0; flex-shrink:0; backdrop-filter:blur(20px); z-index:50;
+}
+.tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 0; }
+.tab-icon { width:24px; height:24px; }
+.tab-label { font-size:10px; font-weight:500; }
+.tab.active .tab-label { color:#4da6ff; }
+.tab.inactive .tab-label { color:#48485a; }
+
+/* ── CARDS ── */
+.card { background:#141420; border-radius:20px; border:1px solid rgba(255,255,255,0.07); margin:0 16px 12px; overflow:hidden; }
+.card-body { padding:16px 18px; }
+
+.badge { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+.badge-red    { background:rgba(255,75,75,0.15);    color:#ff6b6b; }
+.badge-green  { background:rgba(52,211,153,0.15);   color:#34d399; }
+.badge-orange { background:rgba(251,146,60,0.15);   color:#fb923c; }
+.badge-blue   { background:rgba(77,166,255,0.15);   color:#4da6ff; }
+.badge-purple { background:rgba(167,139,250,0.15);  color:#a78bfa; }
+.badge-gray   { background:rgba(255,255,255,0.08);  color:#8a8aa2; }
+
+.divider { height:1px; background:rgba(255,255,255,0.06); margin:0 18px; }
+
+.btn-primary  { background:#4da6ff; color:#fff; border:none; border-radius:14px; padding:16px; font-size:16px; font-weight:600; width:100%; cursor:pointer; }
+.btn-ghost    { background:rgba(255,255,255,0.06); color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:14px; font-size:15px; font-weight:600; width:100%; cursor:pointer; }
+.btn-secondary{ background:rgba(77,166,255,0.12); color:#4da6ff; border:1px solid rgba(77,166,255,0.25); border-radius:14px; padding:12px; font-size:14px; font-weight:600; cursor:pointer; }
+
+.alert-banner { margin:0 16px 12px; border-radius:16px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start; }
+.alert-banner.red    { background:rgba(255,75,75,0.12);   border:1px solid rgba(255,75,75,0.2); }
+.alert-banner.orange { background:rgba(251,146,60,0.12);  border:1px solid rgba(251,146,60,0.2); }
+.alert-banner.purple { background:rgba(167,139,250,0.1);  border:1px solid rgba(167,139,250,0.2); }
+.alert-banner.green  { background:rgba(52,211,153,0.08);  border:1px solid rgba(52,211,153,0.2); }
+.alert-icon  { font-size:20px; flex-shrink:0; }
+.alert-title { font-size:14px; font-weight:700; }
+.alert-body  { font-size:12px; color:#8a8aa2; margin-top:3px; line-height:1.5; }
+
+.modal-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:flex-end; z-index:300; backdrop-filter:blur(4px); }
+.modal-sheet   { background:#141420; border-radius:24px 24px 0 0; border:1px solid rgba(255,255,255,0.08); padding:12px 20px 40px; width:100%; max-height:80%; overflow-y:auto; }
+.modal-handle  { width:36px; height:4px; background:#2a2a3a; border-radius:2px; margin:0 auto 20px; }
+
+.route-code { font-size:36px; font-weight:800; color:#fff; letter-spacing:-1px; }
+.amount-glow { font-size:52px; font-weight:800; color:#34d399; text-align:center; padding:8px 0; text-shadow:0 0 40px rgba(52,211,153,0.4); }
+.input-field { background:#1e1e30; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px; color:#fff; font-size:15px; width:100%; outline:none; margin-bottom:10px; }
+
+.comp-step { display:flex; gap:14px; margin-bottom:20px; }
+.step-num    { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; margin-top:2px; }
+.step-active { background:#4da6ff; color:#fff; }
+.step-done   { background:#34d399; color:#fff; }
+.step-pending{ background:#1e1e30; color:#5a5a72; border:1px solid #2a2a3a; }
+.step-content { flex:1; }
+.step-title  { font-size:14px; font-weight:600; color:#fff; }
+.step-desc   { font-size:12px; color:#5a5a72; margin-top:3px; line-height:1.5; }
+
+.slide-in { animation:slideIn 0.28s cubic-bezier(0.25,0.46,0.45,0.94) both; }
+@keyframes slideIn { from { transform:translateX(30px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+
+/* ── SEARCH BAR ── */
+.search-bar {
+  margin:0 16px; background:#1a1a2c; border-radius:14px;
+  border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center;
+  gap:10px; padding:12px 16px; cursor:text;
+}
+.search-bar input { flex:1; background:none; border:none; outline:none; color:#fff; font-size:15px; font-family:inherit; }
+.search-bar input::placeholder { color:#3a3a52; }
+.search-icon { font-size:16px; color:#3a3a52; flex-shrink:0; }
+
+/* ── SEGMENTED CONTROL ── */
+.seg-ctrl { display:flex; background:#141420; border-radius:12px; padding:3px; margin:12px 16px 0; border:1px solid rgba(255,255,255,0.06); }
+.seg-btn  { flex:1; border:none; border-radius:10px; padding:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.seg-btn.active   { background:#4da6ff; color:#fff; }
+.seg-btn.inactive { background:transparent; color:#5a5a72; }
+
+/* ── FIDS BOARD ── */
+.fids-row { display:flex; align-items:center; padding:11px 16px; border-bottom:1px solid rgba(255,255,255,0.04); cursor:pointer; }
+.fids-row:active { background:rgba(255,255,255,0.03); }
+.fids-time { font-size:15px; font-weight:700; color:#fff; width:46px; flex-shrink:0; }
+.fids-num  { font-size:13px; font-weight:600; color:#8a8aa2; width:62px; flex-shrink:0; }
+.fids-dest { flex:1; font-size:14px; font-weight:500; color:#fff; }
+.fids-gate { font-size:12px; color:#5a5a72; width:36px; text-align:right; flex-shrink:0; }
+.fids-status { width:76px; text-align:right; flex-shrink:0; }
+
+/* ── LIVE FLIGHT ── */
+.live-badge { display:flex; align-items:center; gap:5px; font-size:12px; font-weight:700; color:#34d399; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.live-dot { width:7px; height:7px; border-radius:50%; background:#34d399; animation:blink 1.4s ease-in-out infinite; }
+
+/* ── FLIGHT PROGRESS BAR ── */
+.fp-track { height:4px; background:#1e1e30; border-radius:2px; position:relative; margin:10px 0 4px; }
+.fp-fill  { height:100%; border-radius:2px; position:absolute; left:0; top:0; }
+.fp-plane { position:absolute; top:50%; transform:translate(-50%,-50%); font-size:13px; }
+
+/* ── TIMELINE ── */
+.timeline { display:flex; justify-content:space-between; align-items:flex-start; padding:0 4px; position:relative; margin:8px 0 4px; }
+.timeline::before { content:''; position:absolute; top:11px; left:10%; right:10%; height:1px; background:rgba(255,255,255,0.08); }
+.tl-node { display:flex; flex-direction:column; align-items:center; gap:4px; z-index:1; }
+.tl-dot  { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.tl-dot-done { background:#34d399; box-shadow:0 0 8px rgba(52,211,153,0.5); }
+.tl-dot-active { background:#4da6ff; box-shadow:0 0 8px rgba(77,166,255,0.6); animation:blink 1.4s ease-in-out infinite; }
+.tl-dot-pending { background:#1e1e30; border:1px solid #2a2a3a; }
+.tl-label { font-size:9px; color:#5a5a72; font-weight:600; text-align:center; max-width:52px; line-height:1.3; }
+.tl-time  { font-size:9px; color:#3a3a52; }
+
+/* ── LOG / STATS ── */
+.year-bar-track { height:12px; background:#1e1e30; border-radius:6px; flex:1; overflow:hidden; }
+.year-bar-fill  { height:100%; border-radius:6px; }
+
+.log-flight-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.04); cursor:pointer; }
+.log-flight-row:active { background:rgba(255,255,255,0.03); }
+
+/* ── RISK SCORE ── */
+.risk-arc-wrap { display:flex; flex-direction:column; align-items:center; padding:12px 0 8px; }
+.risk-score-num { font-size:56px; font-weight:800; letter-spacing:-2px; }
+.risk-factor { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+.risk-bar-wrap { width:80px; height:6px; background:#1e1e30; border-radius:3px; overflow:hidden; }
+.risk-bar-fill { height:100%; border-radius:3px; }
+
+/* ── MAP / GLOBE ── */
+.globe-wrap { position:absolute; inset:0; overflow:hidden; background:#050510; }
+.globe-wrap canvas { display:block; }
+.map-card { position:absolute; bottom:0; left:0; right:0; z-index:100; background:linear-gradient(to top, rgba(5,5,16,0.99) 65%, transparent); padding:0 16px 16px; }
+.map-card-inner { background:rgba(14,14,28,0.96); border-radius:20px; border:1px solid rgba(255,255,255,0.09); padding:14px 16px; backdrop-filter:blur(20px); }
+.map-flight-tabs { display:flex; gap:8px; margin-bottom:10px; }
+.map-flight-tab  { flex:1; border-radius:10px; padding:8px 10px; cursor:pointer; border:1px solid transparent; text-align:center; transition:all 0.2s; }
+.map-flight-tab.active-tab   { background:rgba(77,166,255,0.12); border-color:rgba(77,166,255,0.35); }
+.map-flight-tab.inactive-tab { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.07); }
+
+/* lounge / alt / esim */
+.lounge-card { background:#1a1a2a; border-radius:16px; border:1px solid rgba(255,255,255,0.07); margin-bottom:10px; overflow:hidden; }
+.lounge-header { padding:14px 16px; display:flex; gap:12px; align-items:center; }
+.lounge-logo { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.lounge-footer { padding:0 16px 14px; }
+.alt-card { background:#1a1a2a; border-radius:16px; border:1px solid rgba(255,255,255,0.07); margin-bottom:10px; padding:14px 16px; cursor:pointer; }
+.alt-card.selected { border-color:#4da6ff; background:rgba(77,166,255,0.06); }
+.esim-card { background:#1a1a2a; border-radius:16px; border:1px solid rgba(255,255,255,0.07); margin-bottom:10px; padding:16px; display:flex; align-items:center; gap:14px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ══════════════════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════════════════ */
+const AIRPORTS_GEO = {
+  JFK:{ lat:40.6413, lng:-73.7781, city:"New York",    name:"John F. Kennedy" },
+  MUC:{ lat:48.3538, lng:11.7861,  city:"Munich",      name:"Franz Josef Strauss" },
+  FRA:{ lat:50.0379, lng:8.5622,   city:"Frankfurt",   name:"Frankfurt Airport" },
+  LHR:{ lat:51.4775, lng:-0.4614,  city:"London",      name:"Heathrow" },
+  CDG:{ lat:49.0097, lng:2.5479,   city:"Paris",       name:"Charles de Gaulle" },
+  DXB:{ lat:25.2532, lng:55.3657,  city:"Dubai",       name:"Dubai International" },
+  SIN:{ lat:1.3644,  lng:103.9915, city:"Singapore",   name:"Changi" },
+  NRT:{ lat:35.7720, lng:140.3929, city:"Tokyo",       name:"Narita" },
+  ORD:{ lat:41.9742, lng:-87.9073, city:"Chicago",     name:"O'Hare" },
+  LAX:{ lat:33.9425, lng:-118.408, city:"Los Angeles", name:"LAX" },
+  ATL:{ lat:33.6407, lng:-84.4277, city:"Atlanta",     name:"Hartsfield-Jackson" },
+  BCN:{ lat:41.2974, lng:2.0833,   city:"Barcelona",   name:"El Prat" },
+  GRU:{ lat:-23.432, lng:-46.469,  city:"São Paulo",   name:"Guarulhos" },
+  SYD:{ lat:-33.946, lng:151.177,  city:"Sydney",      name:"Kingsford Smith" },
+};
+
+const MAP_FLIGHTS = [
+  { id:1, number:"LH 441",  airline:"Lufthansa",       from:"JFK", to:"MUC", dep:"18:35", arr:"08:10+1", date:"Today",  status:"cancelled", color:"#ff4b4b", aircraftLat:null, aircraftLng:null, aircraftHdg:55,  duration:"8h 35m", progress:0 },
+  { id:2, number:"UA 931",  airline:"United Airlines", from:"MUC", to:"JFK", dep:"13:20", arr:"16:45",   date:"Mar 29", status:"scheduled", color:"#4da6ff", aircraftLat:null, aircraftLng:null, aircraftHdg:285, duration:"9h 25m", progress:0 },
+];
+
+const DEPARTURES = [
+  { time:"18:35", num:"LH 441",  dest:"Munich MUC",       gate:"B22", status:"Cancelled",  statusClass:"badge-red",    delay:null   },
+  { time:"18:55", num:"BA 178",  dest:"London LHR",        gate:"A12", status:"Boarding",   statusClass:"badge-green",  delay:null   },
+  { time:"19:10", num:"EK 202",  dest:"Dubai DXB",         gate:"C4",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
+  { time:"19:25", num:"DL 402",  dest:"Los Angeles LAX",   gate:"B6",  status:"+28 min",    statusClass:"badge-orange", delay:28     },
+  { time:"19:40", num:"AF 011",  dest:"Paris CDG",         gate:"A8",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
+  { time:"20:00", num:"SQ 026",  dest:"Singapore SIN",     gate:"C9",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
+  { time:"20:15", num:"JL 006",  dest:"Tokyo NRT",         gate:"B15", status:"On Time",    statusClass:"badge-blue",   delay:null   },
+  { time:"20:30", num:"UA 901",  dest:"Chicago ORD",       gate:"A3",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
+  { time:"21:00", num:"AA 100",  dest:"London LHR",        gate:"B9",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
+];
+const ARRIVALS = [
+  { time:"17:42", num:"LH 400",  dest:"Frankfurt FRA",     gate:"B20", status:"Landed",     statusClass:"badge-green",  delay:null   },
+  { time:"18:05", num:"QR 701",  dest:"Doha DOH",          gate:"C2",  status:"Landed",     statusClass:"badge-green",  delay:null   },
+  { time:"18:20", num:"DL 401",  dest:"Atlanta ATL",       gate:"A5",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
+  { time:"18:50", num:"UA 84",   dest:"San Francisco SFO", gate:"B3",  status:"+41 min",    statusClass:"badge-orange", delay:41     },
+  { time:"19:05", num:"CX 830",  dest:"Hong Kong HKG",     gate:"C6",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
+  { time:"19:30", num:"AA 6",    dest:"Los Angeles LAX",   gate:"A11", status:"On Time",    statusClass:"badge-blue",   delay:null   },
+  { time:"19:55", num:"VS 45",   dest:"London LHR",        gate:"B7",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
+];
+
+// Per-flight detail data for FIDS tap
+const FIDS_DETAIL = {
+  "LH 441": { airline:"Lufthansa",         from:"JFK", to:"MUC", dep:"18:35", arr:"08:10+1", duration:"8h 35m", status:"cancelled", terminal:"1", gate:"B22", aircraft:"A340", tail:"D-AIHE", alt:null,    spd:null,   hdg:null,  inbound:"LH 400 · FRA → JFK · Cancelled", inboundStatus:"Cancelled", co2:"612 kg" },
+  "BA 178": { airline:"British Airways",   from:"JFK", to:"LHR", dep:"18:55", arr:"07:10+1", duration:"7h 15m", status:"boarding",  terminal:"7", gate:"A12", aircraft:"B777", tail:"G-YMMS", alt:null,    spd:null,   hdg:null,  inbound:"BA 177 · LHR → JFK · Landed",    inboundStatus:"Ready",     co2:"547 kg" },
+  "EK 202": { airline:"Emirates",          from:"JFK", to:"DXB", dep:"19:10", arr:"17:30+1", duration:"12h 20m",status:"scheduled", terminal:"4", gate:"C4",  aircraft:"A380", tail:"A6-EDF", alt:null,    spd:null,   hdg:null,  inbound:"EK 201 · DXB → JFK · On time",   inboundStatus:"Ready",     co2:"1,024 kg"},
+  "DL 402": { airline:"Delta",             from:"JFK", to:"LAX", dep:"19:25", arr:"23:10",   duration:"5h 45m", status:"delayed",   terminal:"2", gate:"B6",  aircraft:"B737", tail:"N320DN", alt:null,    spd:null,   hdg:null,  inbound:"DL 401 · LAX → JFK · Delayed",   inboundStatus:"Delayed",   co2:"284 kg" },
+  "AF 011": { airline:"Air France",        from:"JFK", to:"CDG", dep:"19:40", arr:"08:45+1", duration:"7h 05m", status:"scheduled", terminal:"1", gate:"A8",  aircraft:"B777", tail:"F-GSPY", alt:null,    spd:null,   hdg:null,  inbound:"AF 012 · CDG → JFK · On time",   inboundStatus:"Ready",     co2:"521 kg" },
+  "SQ 026": { airline:"Singapore Airlines",from:"JFK", to:"SIN", dep:"20:00", arr:"06:25+2", duration:"18h 25m",status:"scheduled", terminal:"4", gate:"C9",  aircraft:"A350", tail:"9V-SHB", alt:null,    spd:null,   hdg:null,  inbound:"SQ 025 · SIN → JFK · On time",   inboundStatus:"Ready",     co2:"1,680 kg"},
+  "LH 400": { airline:"Lufthansa",         from:"FRA", to:"JFK", dep:"10:15", arr:"13:40",   duration:"9h 25m", status:"landed",    terminal:"1", gate:"B20", aircraft:"A330", tail:"D-AIKE", alt:null,    spd:null,   hdg:null,  inbound:null,                              inboundStatus:null,        co2:"588 kg" },
+  "UA 84":  { airline:"United Airlines",   from:"SFO", to:"JFK", dep:"07:30", arr:"16:15",   duration:"5h 45m", status:"delayed",   terminal:"4", gate:"B3",  aircraft:"B767", tail:"N641UA", alt:38200,   spd:463,    hdg:85,    inbound:null,                              inboundStatus:null,        co2:"301 kg" },
+  "UA 931": { airline:"United Airlines",   from:"MUC", to:"JFK", dep:"13:20", arr:"16:45",   duration:"9h 25m", status:"scheduled", terminal:"1", gate:"A7",  aircraft:"B767", tail:"N648UA", alt:null,    spd:null,   hdg:null,  inbound:"UA 930 · JFK → MUC · On time",   inboundStatus:"Ready",     co2:"574 kg" },
+};
+
+const FLIGHT_LOG = [
+  { year:2026, flights:[
+    { num:"LH 400", from:"FRA", to:"JFK", date:"Mar 10", airline:"Lufthansa",         miles:3857, duration:"9h 20m", aircraft:"A330", class:"Economy",  co2:"588 kg" },
+    { num:"UA 931", from:"JFK", to:"MUC", date:"Jan 14", airline:"United",             miles:4053, duration:"8h 10m", aircraft:"B767", class:"Business", co2:"574 kg" },
+    { num:"BA 178", from:"JFK", to:"LHR", date:"Jan 3",  airline:"British Airways",    miles:3459, duration:"7h 05m", aircraft:"B777", class:"Economy",  co2:"547 kg" },
+  ]},
+  { year:2025, flights:[
+    { num:"EK 202", from:"JFK", to:"DXB", date:"Dec 21", airline:"Emirates",           miles:6826, duration:"13h 45m", aircraft:"A380", class:"Business", co2:"1,024 kg" },
+    { num:"SQ 026", from:"JFK", to:"SIN", date:"Nov 5",  airline:"Singapore Airlines", miles:9534, duration:"18h 45m", aircraft:"A350", class:"Business", co2:"1,680 kg" },
+    { num:"LH 441", from:"JFK", to:"MUC", date:"Oct 12", airline:"Lufthansa",          miles:4053, duration:"8h 30m", aircraft:"A340", class:"Economy",  co2:"612 kg" },
+    { num:"DL 402", from:"JFK", to:"LAX", date:"Sep 8",  airline:"Delta",              miles:2475, duration:"5h 40m", aircraft:"B737", class:"Economy",  co2:"284 kg" },
+    { num:"AA 100", from:"LHR", to:"JFK", date:"Aug 20", airline:"American Airlines",  miles:3459, duration:"8h 10m", aircraft:"B777", class:"Economy",  co2:"547 kg" },
+    { num:"JL 006", from:"JFK", to:"NRT", date:"Jul 3",  airline:"Japan Airlines",     miles:6732, duration:"14h 10m", aircraft:"B777", class:"Business", co2:"956 kg" },
+  ]},
+  { year:2024, flights:[
+    { num:"AF 011", from:"JFK", to:"CDG", date:"Dec 15", airline:"Air France",         miles:3628, duration:"7h 20m", aircraft:"B777", class:"Economy",  co2:"521 kg" },
+    { num:"LH 400", from:"FRA", to:"JFK", date:"Nov 2",  airline:"Lufthansa",          miles:3857, duration:"9h 20m", aircraft:"A330", class:"Economy",  co2:"588 kg" },
+    { num:"UA 901", from:"ORD", to:"JFK", date:"Oct 5",  airline:"United Airlines",    miles:740,  duration:"2h 15m", aircraft:"B737", class:"Economy",  co2:"98 kg"  },
+    { num:"DL 401", from:"ATL", to:"JFK", date:"Sep 18", airline:"Delta",              miles:865,  duration:"2h 25m", aircraft:"MD-90",class:"Economy",  co2:"114 kg" },
+  ]},
+  { year:2023, flights:[
+    { num:"IB 6251",from:"MAD", to:"JFK", date:"Dec 10", airline:"Iberia",             miles:3591, duration:"8h 40m", aircraft:"A340", class:"Economy",  co2:"508 kg" },
+    { num:"LH 400", from:"FRA", to:"JFK", date:"Oct 22", airline:"Lufthansa",          miles:3857, duration:"9h 20m", aircraft:"A330", class:"Business", co2:"588 kg" },
+    { num:"TK 11",  from:"JFK", to:"IST", date:"Sep 1",  airline:"Turkish Airlines",   miles:5006, duration:"10h 05m", aircraft:"B777", class:"Economy", co2:"660 kg" },
+    { num:"QR 701", from:"JFK", to:"DOH", date:"Jul 15", airline:"Qatar Airways",      miles:6904, duration:"13h 00m", aircraft:"A380", class:"Business", co2:"1,012 kg"},
+    { num:"LX 22",  from:"JFK", to:"ZRH", date:"May 3",  airline:"Swiss",              miles:3926, duration:"8h 30m", aircraft:"B777", class:"Economy",  co2:"568 kg" },
+    { num:"UA 901", from:"ORD", to:"JFK", date:"Mar 12", airline:"United Airlines",    miles:740,  duration:"2h 10m", aircraft:"B737", class:"Economy",  co2:"98 kg"  },
+    { num:"AA 1",   from:"JFK", to:"LAX", date:"Feb 14", airline:"American Airlines",  miles:2475, duration:"5h 55m", aircraft:"A321", class:"Business", co2:"235 kg" },
+    { num:"DL 1",   from:"JFK", to:"ATL", date:"Jan 7",  airline:"Delta",              miles:865,  duration:"2h 20m", aircraft:"B757", class:"Economy",  co2:"114 kg" },
+  ]},
+  { year:2022, flights:[
+    { num:"LH 441", from:"JFK", to:"MUC", date:"Dec 18", airline:"Lufthansa",          miles:4053, duration:"8h 30m", aircraft:"A340", class:"Business", co2:"612 kg" },
+    { num:"EK 202", from:"JFK", to:"DXB", date:"Oct 5",  airline:"Emirates",           miles:6826, duration:"13h 45m", aircraft:"A380", class:"Economy", co2:"1,024 kg"},
+    { num:"BA 178", from:"JFK", to:"LHR", date:"Aug 22", airline:"British Airways",    miles:3459, duration:"7h 05m", aircraft:"B777", class:"Economy",  co2:"547 kg" },
+    { num:"VS 4",   from:"LHR", to:"JFK", date:"Sep 10", airline:"Virgin Atlantic",    miles:3459, duration:"8h 15m", aircraft:"A350", class:"Economy",  co2:"532 kg" },
+    { num:"UA 901", from:"ORD", to:"JFK", date:"Apr 3",  airline:"United Airlines",    miles:740,  duration:"2h 15m", aircraft:"B737", class:"Economy",  co2:"98 kg"  },
+  ]},
+];
+
+// Consistent totals
+const YEAR_STATS = [
+  { year:"2026", flights:3,  miles:11369 },
+  { year:"2025", flights:6,  miles:36079 },
+  { year:"2024", flights:4,  miles:9090  },
+  { year:"2023", flights:8,  miles:26364 },
+  { year:"2022", flights:5,  miles:18537 },
+];
+// Totals: 26 flights, 101,439 miles
+
+const SEARCH_SUGGESTIONS = [
+  { type:"flight",  label:"LH 441", sub:"JFK → MUC · Today 18:35",       icon:"flight" },
+  { type:"flight",  label:"BA 178", sub:"JFK → LHR · Today 18:55",       icon:"flight" },
+  { type:"flight",  label:"EK 202", sub:"JFK → DXB · Today 19:10",       icon:"flight" },
+  { type:"airport", label:"JFK",    sub:"John F. Kennedy · New York",     icon:"airport" },
+  { type:"airport", label:"LHR",    sub:"Heathrow · London",              icon:"airport" },
+  { type:"airport", label:"MUC",    sub:"Franz Josef Strauss · Munich",   icon:"airport" },
+];
+
+/* ══════════════════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════════════════ */
+function greatCircle(fromKey, toKey, steps=80) {
+  const a=AIRPORTS_GEO[fromKey], b=AIRPORTS_GEO[toKey];
+  if(!a||!b) return [];
+  const r=d=>d*Math.PI/180, d2=r=>r*180/Math.PI;
+  const [la1,lo1,la2,lo2]=[r(a.lat),r(a.lng),r(b.lat),r(b.lng)];
+  const D=2*Math.asin(Math.sqrt(Math.pow(Math.sin((la2-la1)/2),2)+Math.cos(la1)*Math.cos(la2)*Math.pow(Math.sin((lo2-lo1)/2),2)));
+  if(D===0) return [[a.lat,a.lng]];
+  return Array.from({length:steps+1},(_,i)=>{
+    const f=i/steps,A=Math.sin((1-f)*D)/Math.sin(D),B=Math.sin(f*D)/Math.sin(D);
+    const x=A*Math.cos(la1)*Math.cos(lo1)+B*Math.cos(la2)*Math.cos(lo2);
+    const y=A*Math.cos(la1)*Math.sin(lo1)+B*Math.cos(la2)*Math.sin(lo2);
+    const z=A*Math.sin(la1)+B*Math.sin(la2);
+    return [d2(Math.atan2(z,Math.sqrt(x*x+y*y))),d2(Math.atan2(y,x))];
+  });
+}
+function numFmt(n) { return Number(n).toLocaleString(); }
+
+/* ══════════════════════════════════════════════════════════
+   SVG ICONS
+══════════════════════════════════════════════════════════ */
+const Icon = ({ name, color="#fff", size=22 }) => {
+  const paths = {
+    trips:   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 4V2M16 4V2"/><path d="M8 14h4M8 17h8"/></svg>,
+    track:   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><path d="M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>,
+    log:     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>,
+    map:     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>,
+    flight:  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19 2c-2-2-4-2-5.5-.5L10 5 1.8 6.2l5.5 5.5-1.7 3.4 3 3 3.4-1.7 5.5 5.5z"/></svg>,
+    airport: <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="18" width="18" height="2" rx="1"/><path d="M12 3L2 10h4v6h12v-6h4L12 3z"/></svg>,
+  };
+  return paths[name] || null;
+};
+
+/* ══════════════════════════════════════════════════════════
+   SHARED COMPONENTS
+══════════════════════════════════════════════════════════ */
+const StatusBar = () => (
+  <div className="status-bar">
+    <span className="status-time">9:41</span>
+    <div className="status-icons">
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="#fff"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="1" width="3" height="11" rx="1"/><rect x="13.5" y="0" width="2.5" height="12" rx="1" opacity="0.3"/></svg>
+      <svg width="15" height="12" viewBox="0 0 15 12" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"><path d="M1 4.5C3.5 2 6 1 7.5 1S11.5 2 14 4.5"/><path d="M3.5 6.8C5 5.2 6.2 4.5 7.5 4.5S10 5.2 11.5 6.8"/><circle cx="7.5" cy="10" r="1.2" fill="#fff"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#fff" strokeOpacity="0.4"/><rect x="2" y="2" width="16" height="8" rx="2" fill="#fff"/><path d="M23 4v4a2 2 0 000-4z" fill="#fff" fillOpacity="0.4"/></svg>
+    </div>
+  </div>
+);
+
+const HomeIndicator = () => (
+  <div className="home-indicator"><div className="home-indicator-bar"/></div>
+);
+
+const TabBar = ({ active, onTab }) => {
+  const tabs = [
+    { id:"trips", label:"Trips",  icon:"trips"  },
+    { id:"track", label:"Track",  icon:"track"  },
+    { id:"log",   label:"Log",    icon:"log"    },
+    { id:"map",   label:"Map",    icon:"map"    },
+  ];
+  return (
+    <div className="tab-bar">
+      {tabs.map(t => (
+        <div key={t.id} className={`tab ${active===t.id?"active":"inactive"}`} onClick={()=>onTab(t.id)}>
+          <div className="tab-icon">
+            <Icon name={t.icon} color={active===t.id?"#4da6ff":"#3a3a52"} size={22}/>
+          </div>
+          <span className="tab-label">{t.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const FlightStatusBadge = ({status}) => {
+  const map = {
+    cancelled: {cls:"badge-red",    txt:"Cancelled"},
+    scheduled: {cls:"badge-blue",   txt:"Scheduled"},
+    active:    {cls:"badge-green",  txt:"In Flight"},
+    landed:    {cls:"badge-green",  txt:"Landed"},
+    delayed:   {cls:"badge-orange", txt:"Delayed"},
+    boarding:  {cls:"badge-green",  txt:"Boarding"},
+  };
+  const {cls,txt} = map[status] || {cls:"badge-gray", txt:status};
+  return <span className={`badge ${cls}`}>{txt}</span>;
+};
+
+const FlightProgressBar = ({ progress, color="#34d399" }) => (
+  <div className="fp-track">
+    <div className="fp-fill" style={{width:`${progress*100}%`, background:color}}/>
+    <div className="fp-plane" style={{left:`${progress*100}%`, color}}>✈</div>
+  </div>
+);
+
+const FlightTimeline = ({ status }) => {
+  const steps = [
+    { label:"Check-in",  time:"16:35" },
+    { label:"Boarding",  time:"18:05" },
+    { label:"Departed",  time:"18:35" },
+    { label:"Cruising",  time:"20:10" },
+    { label:"Arriving",  time:"07:40+1" },
+    { label:"Landed",    time:"08:10+1" },
+  ];
+  const activeIdx = status==="boarding" ? 1 : status==="active" ? 3 : status==="scheduled" ? 0 : status==="landed" ? 5 : 0;
+  return (
+    <div className="timeline">
+      {steps.map((s,i) => (
+        <div key={i} className="tl-node">
+          <div className={`tl-dot ${i<activeIdx?"tl-dot-done":i===activeIdx?"tl-dot-active":"tl-dot-pending"}`}/>
+          <span className="tl-label">{s.label}</span>
+          <span className="tl-time">{i<=activeIdx?s.time:""}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════
+   TRIPS SCREEN
+══════════════════════════════════════════════════════════ */
+const TripsScreen = ({ onNavigate }) => (
+  <div className="screen slide-in">
+    <div className="scroll">
+      <div style={{padding:"16px 20px 8px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{fontSize:28,fontWeight:800,color:"#fff"}}>My Trips</div>
+        <div style={{width:34,height:34,borderRadius:"50%",background:"#1e1e30",display:"flex",alignItems:"center",justifyContent:"center",color:"#4da6ff",fontSize:22,cursor:"pointer",border:"1px solid rgba(77,166,255,0.2)"}}>+</div>
+      </div>
+
+      <div className="alert-banner red" style={{cursor:"pointer"}} onClick={()=>onNavigate("cancellation")}>
+        <span className="alert-icon">⚠</span>
+        <div>
+          <div className="alert-title" style={{color:"#ff6b6b"}}>LH 441 cancelled</div>
+          <div className="alert-body">3 alternative flights found on your route →</div>
+        </div>
+      </div>
+
+      {/* Cancelled flight card */}
+      <div className="card" style={{cursor:"pointer"}} onClick={()=>onNavigate("cancellation")}>
+        <div className="card-body">
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+            <div>
+              <div style={{fontSize:11,color:"#5a5a72",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.5px"}}>Today · Lufthansa</div>
+              <div style={{fontSize:17,fontWeight:700,color:"#fff"}}>LH 441</div>
+            </div>
+            <FlightStatusBadge status="cancelled"/>
+          </div>
+          <div style={{display:"flex",alignItems:"center"}}>
+            <div>
+              <div className="route-code">JFK</div>
+              <div style={{fontSize:11,color:"#5a5a72"}}>New York</div>
+              <div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:3}}>18:35</div>
+            </div>
+            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"0 12px"}}>
+              <div style={{fontSize:10,color:"#5a5a72",marginBottom:4}}>8h 35m · Nonstop</div>
+              <div style={{width:"100%",height:1,background:"linear-gradient(90deg,#2a2a3a,#ff4b4b,#2a2a3a)",opacity:0.5}}/>
+              <div style={{fontSize:10,color:"#5a5a72",marginTop:4}}>A340 · Economy</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div className="route-code">MUC</div>
+              <div style={{fontSize:11,color:"#5a5a72"}}>Munich</div>
+              <div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:3}}>08:10+1</div>
+            </div>
+          </div>
+        </div>
+        <div className="divider"/>
+        <div style={{display:"flex",padding:"10px 16px 14px",gap:8}}>
+          {[{icon:"🌍",l:"Map",s:"map"},{icon:"🛋",l:"Lounges",s:"lounges"},{icon:"€",l:"Claim €600",s:"compensation"},{icon:"📶",l:"eSIM",s:"esim"}].map(a=>(
+            <div key={a.l} onClick={e=>{e.stopPropagation();onNavigate(a.s);}}
+              style={{flex:1,background:"#1e1e30",borderRadius:12,padding:"10px 4px",textAlign:"center",cursor:"pointer",border:"1px solid rgba(255,255,255,0.06)"}}>
+              <div style={{fontSize:14,color:"#8a8aa2"}}>{a.icon}</div>
+              <div style={{fontSize:10,color:"#8a8aa2",marginTop:3,fontWeight:600}}>{a.l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{padding:"4px 20px 6px",fontSize:13,fontWeight:700,color:"#5a5a72",textTransform:"uppercase",letterSpacing:"0.6px"}}>Upcoming</div>
+
+      {/* Upcoming flight with connection risk */}
+      <div className="card" style={{cursor:"pointer"}} onClick={()=>onNavigate("risk")}>
+        <div className="card-body">
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+            <div>
+              <div style={{fontSize:11,color:"#5a5a72",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.5px"}}>Mar 29 · United Airlines</div>
+              <div style={{fontSize:17,fontWeight:700,color:"#fff"}}>UA 931</div>
+            </div>
+            <FlightStatusBadge status="scheduled"/>
+          </div>
+          <div style={{display:"flex",alignItems:"center",marginBottom:12}}>
+            <div>
+              <div style={{fontSize:24,fontWeight:800,color:"#fff"}}>MUC</div>
+              <div style={{fontSize:11,color:"#5a5a72"}}>Munich</div>
+              <div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:2}}>13:20</div>
+            </div>
+            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"0 12px"}}>
+              <div style={{fontSize:10,color:"#5a5a72",marginBottom:4}}>9h 25m · Nonstop</div>
+              <div style={{width:"100%",height:1,background:"linear-gradient(90deg,#2a2a3a,#4da6ff,#2a2a3a)"}}/>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontSize:24,fontWeight:800,color:"#fff"}}>JFK</div>
+              <div style={{fontSize:11,color:"#5a5a72"}}>New York</div>
+              <div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:2}}>16:45</div>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 10px",background:"rgba(251,146,60,0.08)",borderRadius:10,border:"1px solid rgba(251,146,60,0.15)"}}>
+            <span style={{fontSize:12,color:"#fb923c",fontWeight:600}}>⚡ Connection risk: Medium</span>
+            <span style={{fontSize:11,color:"#5a5a72"}}>Tap to analyse →</span>
+          </div>
+        </div>
+      </div>
+      <div style={{height:20}}/>
+    </div>
+  </div>
+);
+
+/* ══════════════════════════════════════════════════════════
+   TRACK SCREEN
+══════════════════════════════════════════════════════════ */
+const TrackScreen = ({ onNavigate }) => {
+  const [query, setQuery]       = useState("");
+  const [mode, setMode]         = useState("flights");
+  const [searching, setSearching] = useState(false);
+  const [showResult, setShowResult] = useState(null);
+  const [boardTab, setBoardTab] = useState("dep");
+  const [selectedFlight, setSelectedFlight] = useState(null);
+
+  const handleSearch = (suggestion) => {
+    setQuery(suggestion.label);
+    setSearching(false);
+    if (suggestion.type === "flight") {
+      setSelectedFlight(suggestion.label);
+      setShowResult("flight");
+    } else {
+      setShowResult("airport");
+    }
+  };
+
+  const filteredSuggestions = SEARCH_SUGGESTIONS.filter(s =>
+    (mode === "flights" ? s.type === "flight" : s.type === "airport") &&
+    (query === "" || s.label.toLowerCase().includes(query.toLowerCase()))
+  );
+
+  // ── Airport board ──────────────────────────────────────
+  if (showResult === "airport") {
+    const board = boardTab === "dep" ? DEPARTURES : ARRIVALS;
+    return (
+      <div className="screen slide-in">
+        <div className="nav-bar">
+          <span className="nav-back" onClick={()=>{setShowResult(null);setQuery("");}}>‹ Back</span>
+          <span className="nav-title">{query} · Live Board</span>
+        </div>
+        <div className="seg-ctrl" style={{margin:"0 16px 8px"}}>
+          <button className={`seg-btn ${boardTab==="dep"?"active":"inactive"}`} onClick={()=>setBoardTab("dep")}>Departures</button>
+          <button className={`seg-btn ${boardTab==="arr"?"active":"inactive"}`} onClick={()=>setBoardTab("arr")}>Arrivals</button>
+        </div>
+        <div style={{display:"flex",padding:"6px 16px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+          <div style={{fontSize:10,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.5px",width:46}}>Time</div>
+          <div style={{fontSize:10,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.5px",width:62}}>Flight</div>
+          <div style={{fontSize:10,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.5px",flex:1}}>Destination</div>
+          <div style={{fontSize:10,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.5px",width:36,textAlign:"right"}}>Gate</div>
+          <div style={{fontSize:10,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.5px",width:76,textAlign:"right"}}>Status</div>
+        </div>
+        <div className="scroll">
+          {board.map((f,i)=>(
+            <div key={i} className="fids-row" onClick={()=>{setSelectedFlight(f.num);setShowResult("flight");}}>
+              <div className="fids-time">{f.time}</div>
+              <div className="fids-num">{f.num}</div>
+              <div className="fids-dest">{f.dest}</div>
+              <div className="fids-gate">{f.gate}</div>
+              <div className="fids-status"><span className={`badge ${f.statusClass}`} style={{fontSize:10,padding:"3px 7px"}}>{f.status}</span></div>
+            </div>
+          ))}
+          <div style={{height:20}}/>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Live flight detail ─────────────────────────────────
+  if (showResult === "flight") {
+    const fn = selectedFlight || query;
+    const d  = FIDS_DETAIL[fn] || FIDS_DETAIL["EK 202"];
+    const isLive = d.alt !== null;
+    return (
+      <div className="screen slide-in">
+        <div className="nav-bar">
+          <span className="nav-back" onClick={()=>{setShowResult(null);setQuery("");}}>‹ Back</span>
+          <span className="nav-title">{fn}</span>
+          <span className="nav-action" style={{color:"#34d399",fontSize:13}}>+ Add</span>
+        </div>
+        <div className="scroll">
+          {/* Hero card */}
+          <div className="card">
+            <div className="card-body">
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+                <div>
+                  <div style={{fontSize:11,color:"#5a5a72",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.5px"}}>{d.airline} · Today</div>
+                  <div style={{fontSize:18,fontWeight:800,color:"#fff"}}>{fn}</div>
+                </div>
+                <FlightStatusBadge status={d.status}/>
+              </div>
+              <div style={{display:"flex",alignItems:"center",marginBottom:10}}>
+                <div>
+                  <div style={{fontSize:28,fontWeight:800,color:"#fff"}}>{d.from}</div>
+                  <div style={{fontSize:11,color:"#5a5a72"}}>{AIRPORTS_GEO[d.from]?.city || d.from}</div>
+                  <div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:3}}>{d.dep}</div>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"0 12px"}}>
+                  <div style={{fontSize:10,color:"#5a5a72",marginBottom:4}}>{d.duration} · Nonstop</div>
+                  <div style={{width:"100%",height:1,background:`linear-gradient(90deg,#2a2a3a,${d.status==="cancelled"?"#ff4b4b":d.status==="delayed"?"#fb923c":"#34d399"},#2a2a3a)`}}/>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:28,fontWeight:800,color:"#fff"}}>{d.to}</div>
+                  <div style={{fontSize:11,color:"#5a5a72"}}>{AIRPORTS_GEO[d.to]?.city || d.to}</div>
+                  <div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:3}}>{d.arr}</div>
+                </div>
+              </div>
+              {/* Flight timeline */}
+              <FlightTimeline status={d.status}/>
+            </div>
+          </div>
+
+          {/* Live telemetry */}
+          {isLive && (
+            <div className="card">
+              <div className="card-body">
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+                  <div className="live-dot"/>
+                  <span className="live-badge">Live</span>
+                  <span style={{fontSize:12,color:"#5a5a72",marginLeft:4}}>Updated 8s ago</span>
+                </div>
+                <div style={{display:"flex"}}>
+                  {[["Altitude",`${numFmt(d.alt)} ft`],["Speed",`${d.spd} kts`],["Heading",`${d.hdg}°`],["V/S","+0 ft/m"]].map(([k,v])=>(
+                    <div key={k} style={{flex:1,textAlign:"center"}}>
+                      <div style={{fontSize:15,fontWeight:700,color:"#fff"}}>{v}</div>
+                      <div style={{fontSize:10,color:"#5a5a72",marginTop:3}}>{k}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Terminal info */}
+          <div className="card">
+            <div className="card-body">
+              <div style={{fontSize:11,color:"#5a5a72",textTransform:"uppercase",letterSpacing:"0.6px",marginBottom:12}}>Terminal Info</div>
+              <div style={{display:"flex"}}>
+                {[["Terminal",d.terminal],["Gate",d.gate],["Aircraft",d.aircraft],["Tail",d.tail]].map(([k,v])=>(
+                  <div key={k} style={{flex:1}}>
+                    <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{v}</div>
+                    <div style={{fontSize:11,color:"#5a5a72",marginTop:3}}>{k}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* CO₂ */}
+          <div style={{margin:"0 16px 12px",background:"rgba(52,211,153,0.05)",border:"1px solid rgba(52,211,153,0.12)",borderRadius:16,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div>
+              <div style={{fontSize:12,fontWeight:700,color:"#34d399"}}>CO₂ Estimate</div>
+              <div style={{fontSize:11,color:"#5a5a72",marginTop:2}}>Per passenger · Economy seat</div>
+            </div>
+            <div style={{fontSize:17,fontWeight:700,color:"#fff"}}>{d.co2}</div>
+          </div>
+
+          {/* Inbound */}
+          {d.inbound && (
+            <div style={{margin:"0 16px 12px",background:"rgba(77,166,255,0.06)",border:"1px solid rgba(77,166,255,0.15)",borderRadius:16,padding:"14px 16px",display:"flex",gap:12,alignItems:"center"}}>
+              <span style={{fontSize:20}}>🛬</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>Where's my plane?</div>
+                <div style={{fontSize:12,color:"#5a5a72",marginTop:2}}>Inbound as {d.inbound}</div>
+              </div>
+              <span className={`badge ${d.inboundStatus==="Ready"?"badge-green":d.inboundStatus==="Delayed"?"badge-orange":d.inboundStatus==="Cancelled"?"badge-red":"badge-blue"}`} style={{flexShrink:0}}>{d.inboundStatus}</span>
+            </div>
+          )}
+
+          <div style={{padding:"0 16px",display:"flex",gap:8,marginBottom:20}}>
+            <button className="btn-secondary" style={{flex:1}} onClick={()=>onNavigate("map")}>View on map</button>
+            <button className="btn-secondary" style={{flex:1}} onClick={()=>onNavigate("lounges")}>Lounges</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main search view ───────────────────────────────────
+  return (
+    <div className="screen slide-in">
+      <div style={{padding:"16px 20px 8px",fontSize:28,fontWeight:800,color:"#fff"}}>Track</div>
+      <div className="search-bar">
+        <span className="search-icon"><Icon name="track" color="#3a3a52" size={16}/></span>
+        <input
+          placeholder={mode==="flights" ? "Flight number, e.g. LH 441" : "Airport code, e.g. JFK"}
+          value={query}
+          onChange={e=>{setQuery(e.target.value);setSearching(true);}}
+          onFocus={()=>setSearching(true)}
+        />
+        {query.length>0 && <span style={{color:"#3a3a52",cursor:"pointer",fontSize:18}} onClick={()=>{setQuery("");setSearching(false);}}>×</span>}
+      </div>
+      <div className="seg-ctrl">
+        <button className={`seg-btn ${mode==="flights"?"active":"inactive"}`} onClick={()=>{setMode("flights");setQuery("");}}>Flights</button>
+        <button className={`seg-btn ${mode==="airports"?"active":"inactive"}`} onClick={()=>{setMode("airports");setQuery("");}}>Airports</button>
+      </div>
+      <div className="scroll" style={{marginTop:12}}>
+        {filteredSuggestions.length > 0 && (
+          <>
+            <div style={{padding:"0 20px 8px",fontSize:11,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.6px"}}>
+              {query.length > 0 ? "Results" : "Recent & Suggested"}
+            </div>
+            {filteredSuggestions.map((s,i)=>(
+              <div key={i} onClick={()=>handleSearch(s)}
+                style={{display:"flex",alignItems:"center",gap:12,padding:"12px 20px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                <div style={{width:38,height:38,borderRadius:10,background:"#1a1a2a",border:"1px solid rgba(255,255,255,0.07)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <Icon name={s.icon} color="#4da6ff" size={18}/>
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:15,fontWeight:700,color:"#fff"}}>{s.label}</div>
+                  <div style={{fontSize:12,color:"#5a5a72",marginTop:2}}>{s.sub}</div>
+                </div>
+                <span style={{color:"#3a3a52",fontSize:14}}>›</span>
+              </div>
+            ))}
+          </>
+        )}
+        <div style={{padding:"20px 20px 8px",fontSize:11,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.6px"}}>Your flights today</div>
+        {[{num:"LH 441",route:"JFK → MUC",status:"cancelled"},{num:"UA 931",route:"MUC → JFK",status:"scheduled",date:"Mar 29"}].map((f,i)=>(
+          <div key={i} onClick={()=>{setSelectedFlight(f.num);setShowResult("flight");}}
+            style={{display:"flex",alignItems:"center",gap:12,padding:"12px 20px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+            <div style={{width:38,height:38,borderRadius:10,background:f.status==="cancelled"?"rgba(255,75,75,0.1)":"rgba(77,166,255,0.1)",border:`1px solid ${f.status==="cancelled"?"rgba(255,75,75,0.2)":"rgba(77,166,255,0.2)"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <Icon name="flight" color={f.status==="cancelled"?"#ff6b6b":"#4da6ff"} size={16}/>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:15,fontWeight:700,color:"#fff"}}>{f.num} · {f.route}</div>
+              <div style={{fontSize:12,color:"#5a5a72",marginTop:2}}>{f.date||"Today"}</div>
+            </div>
+            <FlightStatusBadge status={f.status}/>
+          </div>
+        ))}
+        <div style={{height:20}}/>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════
+   LOG SCREEN
+══════════════════════════════════════════════════════════ */
+const LogScreen = () => {
+  const [expandedYear, setExpandedYear] = useState(2026);
+  const totalFlights = YEAR_STATS.reduce((s,y)=>s+y.flights,0);
+  const totalMiles   = YEAR_STATS.reduce((s,y)=>s+y.miles,0);
+  const maxBar       = Math.max(...YEAR_STATS.map(y=>y.miles));
+  // Longest flight from actual data
+  const longestFlight = "18h 45m";
+
+  return (
+    <div className="screen slide-in">
+      <div className="scroll">
+        <div style={{padding:"16px 20px 8px",fontSize:28,fontWeight:800,color:"#fff"}}>Flight Log</div>
+
+        {/* Global stats grid */}
+        <div style={{margin:"0 16px 12px",background:"#141420",borderRadius:20,border:"1px solid rgba(255,255,255,0.07)",padding:"20px 16px"}}>
+          <div style={{display:"flex",marginBottom:20}}>
+            {[{n:totalFlights,l:"Total flights"},{n:numFmt(totalMiles),l:"Miles flown"},{n:"5",l:"Continents"}].map(({n,l},i)=>(
+              <div key={l} style={{flex:1,textAlign:"center",borderRight:i<2?"1px solid rgba(255,255,255,0.06)":"none"}}>
+                <div style={{fontSize:26,fontWeight:800,color:"#fff",letterSpacing:"-1px"}}>{n}</div>
+                <div style={{fontSize:11,color:"#5a5a72",marginTop:3}}>{l}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex"}}>
+            {[{n:"19",l:"Airports"},{n:"14",l:"Countries"},{n:longestFlight,l:"Longest flight"}].map(({n,l},i)=>(
+              <div key={l} style={{flex:1,textAlign:"center",borderRight:i<2?"1px solid rgba(255,255,255,0.06)":"none"}}>
+                <div style={{fontSize:i===2?16:22,fontWeight:700,color:"#fff"}}>{n}</div>
+                <div style={{fontSize:11,color:"#5a5a72",marginTop:3}}>{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Miles per year */}
+        <div className="card">
+          <div className="card-body">
+            <div style={{fontSize:13,fontWeight:700,color:"#fff",marginBottom:16}}>Miles per year</div>
+            {YEAR_STATS.map(y=>(
+              <div key={y.year} style={{marginBottom:16}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}>
+                  <span style={{fontSize:13,fontWeight:600,color:y.year==="2026"?"#4da6ff":"#fff"}}>{y.year}{y.year==="2026"?" (YTD)":""}</span>
+                  <span style={{fontSize:13,color:"#5a5a72"}}>{numFmt(y.miles)} mi · {y.flights} flights</span>
+                </div>
+                <div className="year-bar-track">
+                  <div className="year-bar-fill" style={{
+                    width:`${(y.miles/maxBar)*100}%`,
+                    background:y.year==="2026"
+                      ? "linear-gradient(90deg,#4da6ff,#7dd3fc)"
+                      : "linear-gradient(90deg,#4da6ff44,#a78bfa)"
+                  }}/>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Achievements */}
+        <div style={{padding:"4px 20px 8px",fontSize:11,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.6px"}}>Achievements</div>
+        <div style={{display:"flex",gap:8,padding:"0 16px",overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
+          {[
+            {icon:"🌍",l:"Globe Trotter",sub:"14 countries"},
+            {icon:"⚡",l:"Long Hauler",  sub:"18h 45m flight"},
+            {icon:"🛫",l:"Jet Setter",   sub:"5 continents"},
+            {icon:"💼",l:"Business Pro", sub:"8 biz class flights"},
+          ].map(a=>(
+            <div key={a.l} style={{flexShrink:0,background:"#141420",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:"12px 14px",textAlign:"center",width:96}}>
+              <div style={{fontSize:24,marginBottom:4}}>{a.icon}</div>
+              <div style={{fontSize:11,fontWeight:700,color:"#fff"}}>{a.l}</div>
+              <div style={{fontSize:10,color:"#5a5a72",marginTop:2}}>{a.sub}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Flight history */}
+        <div style={{padding:"20px 20px 8px",fontSize:11,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.6px"}}>Flight history</div>
+        {FLIGHT_LOG.map(yearGroup=>{
+          const ys = YEAR_STATS.find(y=>y.year==yearGroup.year);
+          return (
+            <div key={yearGroup.year} style={{margin:"0 16px 8px",background:"#141420",borderRadius:16,border:"1px solid rgba(255,255,255,0.07)",overflow:"hidden"}}>
+              <div onClick={()=>setExpandedYear(expandedYear===yearGroup.year?null:yearGroup.year)}
+                style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 16px",cursor:"pointer"}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <div style={{fontSize:16,fontWeight:800,color:yearGroup.year===2026?"#4da6ff":"#fff"}}>{yearGroup.year}</div>
+                  <span className={`badge ${yearGroup.year===2026?"badge-blue":"badge-gray"}`}>{yearGroup.flights.length} flights</span>
+                </div>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:13,color:"#5a5a72"}}>{numFmt(ys?.miles||0)} mi</span>
+                  <span style={{color:"#3a3a52",fontSize:14,display:"inline-block",transform:expandedYear===yearGroup.year?"rotate(90deg)":"none",transition:"transform 0.2s"}}>›</span>
+                </div>
+              </div>
+              {expandedYear===yearGroup.year && yearGroup.flights.map((f,i)=>(
+                <div key={i} className="log-flight-row">
+                  <div style={{width:36,height:36,borderRadius:10,background:"#1e1e30",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <Icon name="flight" color="#4da6ff" size={16}/>
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                      <span style={{fontSize:14,fontWeight:700,color:"#fff"}}>{f.from} → {f.to}</span>
+                      <span style={{fontSize:11,color:"#5a5a72"}}>· {f.num}</span>
+                      <span className={`badge ${f.class==="Business"?"badge-purple":"badge-gray"}`} style={{fontSize:9,padding:"2px 6px"}}>{f.class}</span>
+                    </div>
+                    <div style={{fontSize:11,color:"#5a5a72",marginTop:2}}>{f.airline} · {f.aircraft} · {f.date}</div>
+                  </div>
+                  <div style={{textAlign:"right",flexShrink:0}}>
+                    <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>{numFmt(f.miles)} mi</div>
+                    <div style={{fontSize:11,color:"#5a5a72",marginTop:1}}>{f.duration}</div>
+                    <div style={{fontSize:10,color:"#34d399",marginTop:1}}>{f.co2}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+        <div style={{height:24}}/>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════
+   CONNECTION RISK SCREEN
+══════════════════════════════════════════════════════════ */
+const ConnectionRiskScreen = ({ onBack }) => {
+  const factors = [
+    { label:"Layover time",      value:"55 min",  score:35, note:"Below 60 min minimum recommended",    color:"#ff6b6b" },
+    { label:"Terminal change",   value:"T2 → T1", score:60, note:"10 min walk between terminals",        color:"#fb923c" },
+    { label:"Historical on-time",value:"78%",     score:78, note:"UA 931 on-time last 30 days",          color:"#34d399" },
+    { label:"Typical delay",     value:"+12 min", score:65, note:"Average inbound delay at MUC",         color:"#fb923c" },
+    { label:"Baggage transfer",  value:"Auto",    score:90, note:"Interline agreement confirmed",         color:"#34d399" },
+  ];
+  const overallScore = 52;
+  const scoreColor = overallScore >= 70 ? "#34d399" : overallScore >= 45 ? "#fb923c" : "#ff6b6b";
+  const scoreLabel = overallScore >= 70 ? "Low Risk" : overallScore >= 45 ? "Medium Risk" : "High Risk";
+
+  return (
+    <div className="screen slide-in">
+      <div className="nav-bar">
+        <span className="nav-back" onClick={onBack}>‹ Back</span>
+        <span className="nav-title">Connection Risk</span>
+      </div>
+      <div className="scroll">
+        {/* Score hero */}
+        <div className="card">
+          <div className="card-body">
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+              <div>
+                <div style={{fontSize:12,color:"#5a5a72",textTransform:"uppercase",letterSpacing:"0.6px",marginBottom:4}}>MUC connection · Mar 29</div>
+                <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>LH 441 → UA 931</div>
+                <div style={{fontSize:13,color:"#5a5a72",marginTop:2}}>Arrives 08:10 · Departs 13:20 · 5h 10m</div>
+              </div>
+              <div style={{textAlign:"center"}}>
+                <div style={{fontSize:52,fontWeight:800,color:scoreColor,lineHeight:1,letterSpacing:"-2px"}}>{overallScore}</div>
+                <div style={{fontSize:12,fontWeight:700,color:scoreColor}}>{scoreLabel}</div>
+              </div>
+            </div>
+            <div style={{height:8,background:"#1e1e30",borderRadius:4,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${overallScore}%`,background:`linear-gradient(90deg,#ff4b4b,#fb923c,#34d399)`,backgroundSize:"200% 100%",backgroundPosition:`${100-overallScore}% 0`,borderRadius:4}}/>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
+              <span style={{fontSize:10,color:"#ff6b6b",fontWeight:600}}>High risk</span>
+              <span style={{fontSize:10,color:"#34d399",fontWeight:600}}>Low risk</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Warning banner */}
+        <div className="alert-banner orange">
+          <span className="alert-icon">⚡</span>
+          <div>
+            <div className="alert-title" style={{color:"#fb923c"}}>Tight connection alert</div>
+            <div className="alert-body">55-min layover at MUC with terminal change. Any delay on the inbound leg puts your connection at risk. Consider rebooking to a later departure.</div>
+          </div>
+        </div>
+
+        {/* Risk factors */}
+        <div style={{padding:"4px 20px 10px",fontSize:11,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.6px"}}>Risk factors</div>
+        <div className="card">
+          {factors.map((f,i)=>(
+            <div key={i} style={{padding:"14px 18px",borderBottom:i<factors.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
+              <div className="risk-factor" style={{padding:0,border:"none"}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:600,color:"#fff"}}>{f.label}</div>
+                  <div style={{fontSize:11,color:"#5a5a72",marginTop:2}}>{f.note}</div>
+                </div>
+                <div style={{textAlign:"right",marginLeft:12}}>
+                  <div style={{fontSize:14,fontWeight:700,color:f.color,marginBottom:4}}>{f.value}</div>
+                  <div className="risk-bar-wrap">
+                    <div className="risk-bar-fill" style={{width:`${f.score}%`,background:f.color,opacity:0.8}}/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Recommendation */}
+        <div style={{padding:"0 20px 8px",fontSize:11,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.6px"}}>Recommendation</div>
+        <div style={{margin:"0 16px 12px",background:"rgba(77,166,255,0.06)",border:"1px solid rgba(77,166,255,0.15)",borderRadius:16,padding:"14px 16px"}}>
+          <div style={{fontSize:13,fontWeight:700,color:"#fff",marginBottom:6}}>Book the 15:45 departure instead</div>
+          <div style={{fontSize:12,color:"#5a5a72",lineHeight:1.6,marginBottom:12}}>UA 935 MUC → JFK departs at 15:45, giving you a 7h 35m buffer. Same price, no change fee — we'll rebook automatically if your flight is delayed.</div>
+          <button className="btn-primary" style={{padding:"12px",fontSize:14}}>Switch to UA 935 · No fee →</button>
+        </div>
+        <div style={{height:24}}/>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════
+   MAP SCREEN  (Three.js r128 — cdnjs, no API key)
+══════════════════════════════════════════════════════════ */
+
+// Convert lat/lng to a point on a unit sphere (Three.js coords)
+function latLngToVec3(lat, lng, r) {
+  const phi   = (90 - lat) * Math.PI / 180;
+  const theta = (lng + 180) * Math.PI / 180;
+  return new THREE.Vector3(
+    -r * Math.sin(phi) * Math.cos(theta),
+     r * Math.cos(phi),
+     r * Math.sin(phi) * Math.sin(theta)
+  );
+}
+
+// Build arc points between two lat/lng pairs with a bow height
+function buildArc(fromGeo, toGeo, segments, bowHeight) {
+  const pts = [];
+  for (let i = 0; i <= segments; i++) {
+    const t   = i / segments;
+    const lat = fromGeo.lat + (toGeo.lat - fromGeo.lat) * t;
+    const lng = fromGeo.lng + (toGeo.lng - fromGeo.lng) * t;
+    const h   = 1.0 + bowHeight * Math.sin(Math.PI * t);
+    pts.push(latLngToVec3(lat, lng, h));
+  }
+  return pts;
+}
+
+const MapScreen = ({ onNavigate }) => {
+  const mountRef = useRef(null);
+  const stateRef = useRef({});
+  const [active, setActive] = useState(0);
+
+  // When tab changes, nudge the globe to face the route midpoint
+  useEffect(() => {
+    const eg = stateRef.current.earthGroup;
+    if (!eg) return;
+    const fl  = MAP_FLIGHTS[active];
+    const a   = AIRPORTS_GEO[fl.from];
+    const b   = AIRPORTS_GEO[fl.to];
+    const midLng = (a.lng + b.lng) / 2;
+    // Rotate so the midpoint faces the camera (camera is at +Z)
+    // Three.js sphere: lng maps to -rotation.y offset
+    eg.rotation.y = (-midLng * Math.PI / 180) + Math.PI;
+    eg.rotation.x = (-(a.lat + b.lat) / 2) * Math.PI / 180 * 0.5;
+  }, [active]);
+
+  useEffect(() => {
+    const el = mountRef.current;
+    if (!el || stateRef.current.renderer) return;
+
+    // Device shell is 393×852; subtract status(54) + tabs(60) + home(34) = 704px screen height
+    const W = 393;
+    const H = 704;
+
+    /* ── Renderer ─────────────────────────────────── */
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(W, H);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x050510, 1);
+    // Style the canvas to fill the container
+    renderer.domElement.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;display:block;';
+    el.appendChild(renderer.domElement);
+
+    /* ── Scene & camera ───────────────────────────── */
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
+    camera.position.set(0, 0, 2.8);
+    camera.lookAt(0, 0, 0);
+
+    /* ── Lighting (in scene space, not group) ─────── */
+    scene.add(new THREE.AmbientLight(0x334466, 2.2));
+    const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+    sun.position.set(5, 3, 5);
+    scene.add(sun);
+
+    /* ── Rotating group: globe + arcs + markers ───── */
+    // Everything inside rotates together so arcs stay on the surface
+    const earthGroup = new THREE.Group();
+    // Start oriented so transatlantic route faces the camera
+    earthGroup.rotation.y = 0.52; // ~30° — centres Atlantic
+    scene.add(earthGroup);
+
+    /* ── Globe sphere ─────────────────────────────── */
+    const globeGeo = new THREE.SphereGeometry(1, 64, 64);
+    const globeMat = new THREE.MeshPhongMaterial({
+      color:      0x1a3055,
+      shininess:  8,
+      specular:   new THREE.Color(0x112244),
+    });
+    const globe = new THREE.Mesh(globeGeo, globeMat);
+    earthGroup.add(globe);
+
+    // Load NASA night-lights texture (async — falls back to deep blue)
+    new THREE.TextureLoader().load(
+      'https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-night.jpg',
+      (tex) => { globeMat.map = tex; globeMat.color.set(0xffffff); globeMat.needsUpdate = true; },
+      undefined,
+      () => {}
+    );
+
+    /* ── Atmosphere glow (in scene, not group — always faces camera) ── */
+    const atmMat = new THREE.MeshPhongMaterial({
+      color: 0x4488cc, transparent: true, opacity: 0.10, side: THREE.BackSide,
+    });
+    scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.12, 32, 32), atmMat));
+
+    /* ── Airport markers (inside earthGroup so they rotate with globe) ── */
+    const dotMat  = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x4da6ff, transparent: true, opacity: 0.55, side: THREE.DoubleSide });
+    const seenCodes = new Set();
+    MAP_FLIGHTS.forEach(fl => {
+      [fl.from, fl.to].forEach(code => {
+        if (seenCodes.has(code)) return;
+        seenCodes.add(code);
+        const apt = AIRPORTS_GEO[code];
+        const pos = latLngToVec3(apt.lat, apt.lng, 1.012);
+        const dot = new THREE.Mesh(new THREE.SphereGeometry(0.013, 8, 8), dotMat.clone());
+        dot.position.copy(pos);
+        earthGroup.add(dot);
+        const ring = new THREE.Mesh(new THREE.RingGeometry(0.018, 0.030, 16), ringMat.clone());
+        ring.position.copy(pos);
+        ring.lookAt(new THREE.Vector3(0, 0, 0));
+        earthGroup.add(ring);
+      });
+    });
+
+    /* ── Flight arcs (inside earthGroup) ─────────── */
+    MAP_FLIGHTS.forEach(fl => {
+      const pts = buildArc(AIRPORTS_GEO[fl.from], AIRPORTS_GEO[fl.to], 90, 0.22);
+      const geo  = new THREE.BufferGeometry().setFromPoints(pts);
+
+      // Glow halo
+      earthGroup.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(pts),
+        new THREE.LineBasicMaterial({ color: new THREE.Color(fl.color), transparent: true, opacity: fl.status==='cancelled' ? 0.08 : 0.18 })
+      ));
+      // Main arc
+      earthGroup.add(new THREE.Line(geo,
+        new THREE.LineBasicMaterial({ color: new THREE.Color(fl.color), transparent: true, opacity: fl.status==='cancelled' ? 0.45 : 0.9 })
+      ));
+      // Animated sweep (non-cancelled only)
+      if (fl.status !== 'cancelled') {
+        const sweepGeo = new THREE.BufferGeometry().setFromPoints(pts.slice(0, 2));
+        const sweep    = new THREE.Line(sweepGeo,
+          new THREE.LineBasicMaterial({ color: new THREE.Color(fl.color) })
+        );
+        earthGroup.add(sweep);
+        if (!stateRef.current.sweeps) stateRef.current.sweeps = [];
+        stateRef.current.sweeps.push({ sweep, pts, prog: 0, speed: 0.004 });
+      }
+    });
+
+    /* ── Drag-to-rotate ───────────────────────────── */
+    let isDragging = false, prevX = 0, prevY = 0;
+    let autoSpin = true;
+    const onDown = (e) => {
+      isDragging = true; autoSpin = false;
+      prevX = e.clientX || e.touches?.[0]?.clientX || 0;
+      prevY = e.clientY || e.touches?.[0]?.clientY || 0;
+    };
+    const onMove = (e) => {
+      if (!isDragging) return;
+      const cx = e.clientX || e.touches?.[0]?.clientX || 0;
+      const cy = e.clientY || e.touches?.[0]?.clientY || 0;
+      earthGroup.rotation.y += (cx - prevX) * 0.006;
+      earthGroup.rotation.x  = Math.max(-1.1, Math.min(1.1, earthGroup.rotation.x + (cy - prevY) * 0.004));
+      prevX = cx; prevY = cy;
+    };
+    const onUp = () => { isDragging = false; };
+    renderer.domElement.addEventListener('mousedown',  onDown);
+    renderer.domElement.addEventListener('touchstart', onDown, { passive: true });
+    window.addEventListener('mousemove',  onMove);
+    window.addEventListener('touchmove',  onMove, { passive: true });
+    window.addEventListener('mouseup',    onUp);
+    window.addEventListener('touchend',   onUp);
+
+    /* ── Animation loop ───────────────────────────── */
+    let animId;
+    stateRef.current.earthGroup = earthGroup;
+
+    const animate = () => {
+      animId = requestAnimationFrame(animate);
+      if (autoSpin) earthGroup.rotation.y += 0.0022;
+
+      // Arc sweep animation
+      (stateRef.current.sweeps || []).forEach(s => {
+        s.prog = (s.prog + s.speed) % 1.1;
+        const end = Math.min(Math.floor(s.prog * s.pts.length), s.pts.length - 1);
+        const visible = s.pts.slice(0, Math.max(2, end));
+        if (visible.length >= 2) {
+          s.sweep.geometry.setFromPoints(visible);
+          s.sweep.geometry.attributes.position.needsUpdate = true;
+        }
+      });
+
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    Object.assign(stateRef.current, { renderer, camera });
+
+    return () => {
+      cancelAnimationFrame(animId);
+      renderer.domElement.removeEventListener('mousedown',  onDown);
+      renderer.domElement.removeEventListener('touchstart', onDown);
+      window.removeEventListener('mousemove',  onMove);
+      window.removeEventListener('touchmove',  onMove);
+      window.removeEventListener('mouseup',    onUp);
+      window.removeEventListener('touchend',   onUp);
+      if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
+      renderer.dispose();
+      stateRef.current = {};
+    };
+  }, []);
+
+  const fl = MAP_FLIGHTS[active];
+
+  return (
+    <div className="screen" style={{position:'relative', background:'#050510'}}>
+
+      {/* Three.js mounts its canvas here */}
+      <div ref={mountRef} style={{position:'absolute',inset:0,overflow:'hidden'}}/>
+
+      {/* Top fade + title */}
+      <div style={{position:'absolute',top:0,left:0,right:0,height:80,zIndex:10,
+        background:'linear-gradient(to bottom,rgba(5,5,16,0.88),transparent)',pointerEvents:'none'}}/>
+      <div style={{position:'absolute',top:14,left:0,right:0,zIndex:20,textAlign:'center',pointerEvents:'none'}}>
+        <span style={{fontSize:15,fontWeight:700,color:'#fff',textShadow:'0 1px 10px rgba(0,0,0,0.9)'}}>Trip Map</span>
+      </div>
+
+      {/* Legend */}
+      <div style={{position:'absolute',top:50,left:14,zIndex:100,
+        background:'rgba(8,8,20,0.82)',border:'1px solid rgba(255,255,255,0.09)',
+        borderRadius:10,padding:'8px 12px',backdropFilter:'blur(12px)'}}>
+        {MAP_FLIGHTS.map((f,i)=>(
+          <div key={f.id} style={{display:'flex',alignItems:'center',gap:8,marginBottom:i<MAP_FLIGHTS.length-1?5:0}}>
+            <div style={{width:20,height:f.status==='cancelled'?1.5:2.5,background:f.color,
+              opacity:f.status==='cancelled'?0.5:1,borderRadius:1}}/>
+            <span style={{fontSize:11,fontWeight:600,color:f.status==='cancelled'?'#ff6b6b':'#b0b0c8'}}>
+              {f.number}{f.status==='cancelled'?' · cancelled':''}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Hint */}
+      <div style={{position:'absolute',bottom:260,left:0,right:0,zIndex:50,textAlign:'center',pointerEvents:'none'}}>
+        <div style={{display:'inline-flex',alignItems:'center',gap:6,
+          background:'rgba(10,10,20,0.65)',border:'1px solid rgba(255,255,255,0.07)',
+          borderRadius:20,padding:'5px 13px',backdropFilter:'blur(8px)'}}>
+          <span style={{fontSize:11,color:'rgba(255,255,255,0.4)'}}>Drag to rotate · Scroll to zoom</span>
+        </div>
+      </div>
+
+      {/* Bottom card */}
+      <div className="map-card">
+        <div className="map-flight-tabs">
+          {MAP_FLIGHTS.map((f,i)=>(
+            <div key={f.id} className={`map-flight-tab ${active===i?'active-tab':'inactive-tab'}`}
+              onClick={()=>setActive(i)}>
+              <div style={{fontSize:12,fontWeight:700,color:active===i?f.color:'#5a5a72'}}>{f.number}</div>
+              <div style={{fontSize:10,color:'#3a3a52',marginTop:2}}>{f.from} → {f.to}</div>
+            </div>
+          ))}
+        </div>
+        <div className="map-card-inner">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
+            <div>
+              <div style={{fontSize:11,color:'#5a5a72',marginBottom:3,textTransform:'uppercase',letterSpacing:'0.5px'}}>
+                {fl.airline} · {fl.date}
+              </div>
+              <div style={{fontSize:17,fontWeight:700,color:'#fff'}}>{fl.number}</div>
+            </div>
+            <FlightStatusBadge status={fl.status}/>
+          </div>
+          <div style={{display:'flex',alignItems:'center',marginBottom:12}}>
+            <div>
+              <div style={{fontSize:26,fontWeight:800,color:'#fff'}}>{fl.from}</div>
+              <div style={{fontSize:11,color:'#5a5a72'}}>{AIRPORTS_GEO[fl.from]?.city}</div>
+              <div style={{fontSize:13,fontWeight:600,color:'#fff',marginTop:2}}>{fl.dep}</div>
+            </div>
+            <div style={{flex:1,padding:'0 12px'}}>
+              <div style={{fontSize:10,color:'#5a5a72',textAlign:'center',marginBottom:4}}>{fl.duration}</div>
+              <FlightProgressBar progress={fl.progress} color={fl.color}/>
+              <div style={{fontSize:10,color:'#5a5a72',textAlign:'center',marginTop:4}}>Nonstop</div>
+            </div>
+            <div style={{textAlign:'right'}}>
+              <div style={{fontSize:26,fontWeight:800,color:'#fff'}}>{fl.to}</div>
+              <div style={{fontSize:11,color:'#5a5a72'}}>{AIRPORTS_GEO[fl.to]?.city}</div>
+              <div style={{fontSize:13,fontWeight:600,color:'#fff',marginTop:2}}>{fl.arr}</div>
+            </div>
+          </div>
+          {fl.status==='cancelled'
+            ? <button className="btn-primary"
+                style={{padding:'12px',background:'linear-gradient(135deg,#ff4b4b,#ff6b6b)',fontSize:14}}
+                onClick={()=>onNavigate('cancellation')}>Find alternative flights →</button>
+            : <div style={{display:'flex',gap:8}}>
+                <button className="btn-secondary" style={{flex:1,padding:'10px',fontSize:13}} onClick={()=>onNavigate('lounges')}>Lounges</button>
+                <button className="btn-secondary" style={{flex:1,padding:'10px',fontSize:13}} onClick={()=>onNavigate('esim')}>eSIM</button>
+              </div>
+          }
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════
+   SECONDARY SCREENS
+══════════════════════════════════════════════════════════ */
+const altFlights=[
+  {id:1,airline:"Lufthansa",   number:"LH 443",  dep:"21:15",arr:"11:40+1",stops:"Nonstop",    price:"No change fee",duration:"8h 25m",seats:4},
+  {id:2,airline:"United",      number:"UA 8898", dep:"19:55",arr:"12:20+1",stops:"1 stop · FRA",price:"+$0",          duration:"9h 25m",seats:12},
+  {id:3,airline:"Delta",       number:"DL 9902", dep:"22:40",arr:"14:55+1",stops:"Nonstop",    price:"+$89",          duration:"8h 15m",seats:2},
+];
+const lounges=[
+  {id:1,name:"Lufthansa Senator Lounge",terminal:"T1 · Gates B20–B40",access:"owned",reason:"Miles & More Senator Card",emoji:"✈",bg:"#1e2030",hot:["Shower available","Hot buffet","Fast WiFi"]},
+  {id:2,name:"Chase Sapphire Lounge",   terminal:"T1 · Concourse B",  access:"owned",reason:"Chase Sapphire Reserve®",  emoji:"💎",bg:"#201e30",hot:["Cocktail bar","À la carte","Spa"]},
+  {id:3,name:"Amex Centurion",          terminal:"T4 · 15 min walk",  access:"none", reason:"Amex Platinum required",   emoji:"🏛",bg:"#1e2020",hot:["Open 6am–10pm","Day pass $50"]},
+];
+const esimPlans=[
+  {id:1,flag:"🇩🇪",country:"Germany",               data:"10 GB",duration:"30 days",price:"$12.99",provider:"Airalo"},
+  {id:2,flag:"🇪🇺",country:"Europe (38 countries)", data:"5 GB", duration:"15 days",price:"$18.99",provider:"Airalo"},
+  {id:3,flag:"🌍",country:"Global 100+ countries",  data:"3 GB", duration:"30 days",price:"$27.99",provider:"Airalo"},
+];
+
+const CancellationScreen=({onBack,onNavigate})=>{
+  const[sel,setSel]=useState(null);
+  const[done,setDone]=useState(false);
+  if(done) return(
+    <div className="screen slide-in"><div className="scroll"><div style={{textAlign:"center",padding:"60px 32px 40px"}}>
+      <div style={{fontSize:64,marginBottom:20}}>✅</div>
+      <div style={{fontSize:26,fontWeight:800,color:"#fff",marginBottom:12}}>You're rebooked!</div>
+      <div style={{fontSize:14,color:"#5a5a72",lineHeight:1.6,marginBottom:32}}>LH 443 confirmed · JFK → MUC<br/>Departs 21:15 tonight · No change fee</div>
+      <div style={{background:"#141420",borderRadius:20,border:"1px solid rgba(255,255,255,0.07)",padding:20,marginBottom:20}}>
+        <div style={{fontSize:11,color:"#5a5a72",marginBottom:12,textTransform:"uppercase",letterSpacing:"0.6px"}}>What's next</div>
+        {["Claim €600 compensation for LH 441 →","Buy Germany eSIM for data →","Find a lounge for your 3h wait →"].map((item,i)=>(
+          <div key={i} onClick={()=>onNavigate(["compensation","esim","lounges"][i])}
+            style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 0",borderBottom:i<2?"1px solid rgba(255,255,255,0.05)":"none",cursor:"pointer"}}>
+            <span style={{fontSize:14,color:"#4da6ff",fontWeight:500}}>{item}</span>
+            <span style={{color:"#3a3a52"}}>›</span>
+          </div>
+        ))}
+      </div>
+    </div></div>
+    <div style={{padding:"0 16px 20px",flexShrink:0}}><button className="btn-ghost" onClick={onBack}>Back to trips</button></div></div>
+  );
+  return(
+    <div className="screen slide-in">
+      <div className="nav-bar"><span className="nav-back" onClick={onBack}>‹ Back</span><span className="nav-title">Cancellation Recovery</span></div>
+      <div className="scroll">
+        <div className="alert-banner red"><span className="alert-icon">⚠</span><div><div className="alert-title" style={{color:"#ff6b6b"}}>LH 441 Cancelled</div><div className="alert-body">JFK → MUC · Originally 18:35 · Lufthansa notified 2h before departure</div></div></div>
+        <div className="alert-banner orange"><span className="alert-icon">⚖</span><div><div className="alert-title" style={{color:"#fb923c"}}>EU261 compensation likely owed</div><div className="alert-body"><span style={{color:"#4da6ff",cursor:"pointer"}} onClick={()=>onNavigate("compensation")}>Claim up to €600 →</span></div></div></div>
+        <div style={{padding:"8px 20px 4px",fontSize:17,fontWeight:700,color:"#fff"}}>3 alternatives found</div>
+        <div style={{padding:"0 20px 12px",fontSize:13,color:"#5a5a72"}}>Same route · Lowest change fee first</div>
+        <div style={{padding:"0 16px"}}>
+          {altFlights.map(f=>(
+            <div key={f.id} className={`alt-card ${sel===f.id?"selected":""}`} onClick={()=>setSel(f.id)}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+                <div><div style={{fontSize:13,color:"#5a5a72",marginBottom:3}}>{f.airline}</div><div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{f.number}</div></div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:16,fontWeight:700,color:f.price==="No change fee"?"#34d399":"#fff"}}>{f.price}</div>
+                  {f.seats<=4&&<div style={{fontSize:11,color:"#fb923c",marginTop:2}}>Only {f.seats} seats left</div>}
+                </div>
+              </div>
+              <div style={{display:"flex",gap:24,alignItems:"center"}}>
+                <div><div style={{fontSize:20,fontWeight:700,color:"#fff"}}>{f.dep}</div><div style={{fontSize:11,color:"#5a5a72"}}>JFK</div></div>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+                  <div style={{fontSize:11,color:"#5a5a72"}}>{f.duration}</div>
+                  <div style={{width:60,height:1,background:"#2a2a3a",margin:"4px 0"}}/>
+                  <div style={{fontSize:11,color:"#5a5a72"}}>{f.stops}</div>
+                </div>
+                <div><div style={{fontSize:20,fontWeight:700,color:"#fff"}}>{f.arr}</div><div style={{fontSize:11,color:"#5a5a72"}}>MUC</div></div>
+                {sel===f.id&&<span style={{fontSize:18,marginLeft:"auto",color:"#34d399"}}>✓</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{height:20}}/>
+      </div>
+      <div style={{padding:"0 16px 20px",flexShrink:0}}>
+        <button className="btn-primary" disabled={!sel} onClick={()=>sel&&setDone(true)} style={{opacity:sel?1:0.4}}>
+          {sel?`Rebook ${altFlights.find(f=>f.id===sel)?.number} →`:"Select a flight"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const LoungesScreen=({onBack})=>{
+  const[modal,setModal]=useState(null);
+  const[purchased,setPurchased]=useState(false);
+  return(
+    <div className="screen slide-in">
+      <div className="nav-bar"><span className="nav-back" onClick={onBack}>‹ Back</span><span className="nav-title">Lounges · JFK T1</span></div>
+      <div className="scroll">
+        <div style={{padding:"4px 16px 0"}}>
+          <div style={{background:"#141420",borderRadius:14,border:"1px solid rgba(255,255,255,0.06)",padding:"12px 14px",display:"flex",gap:10,alignItems:"center",marginBottom:12}}>
+            <span style={{fontSize:18}}>🕐</span>
+            <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:"#fff"}}>3h 40m until LH 443 boards</div><div style={{fontSize:11,color:"#5a5a72"}}>Gate B22 · Opens 20:45</div></div>
+          </div>
+        </div>
+        {lounges.map(l=>(
+          <div key={l.id} className="lounge-card" style={{margin:"0 16px 10px"}}>
+            <div className="lounge-header">
+              <div className="lounge-logo" style={{background:l.bg}}><span style={{fontSize:20}}>{l.emoji}</span></div>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#fff",flex:1,paddingRight:8}}>{l.name}</div>
+                  {l.access==="owned"?<span className="badge badge-green">Free</span>:<span className="badge badge-orange">Day pass</span>}
+                </div>
+                <div style={{fontSize:11,color:"#5a5a72",marginTop:3}}>{l.terminal}</div>
+                <div style={{fontSize:11,color:l.access==="owned"?"#34d399":"#fb923c",marginTop:3,fontWeight:500}}>{l.access==="owned"?`Via ${l.reason}`:l.reason}</div>
+              </div>
+            </div>
+            <div style={{padding:"0 16px 8px",display:"flex",gap:6,flexWrap:"wrap"}}>
+              {l.hot.map(h=>(<span key={h} style={{fontSize:11,color:"#8a8aa2",background:"#1e1e30",padding:"3px 8px",borderRadius:6}}>{h}</span>))}
+            </div>
+            <div className="lounge-footer">
+              {l.access==="owned"
+                ?<button className="btn-secondary" style={{padding:"10px",width:"100%"}}>View lounge details →</button>
+                :<button className="btn-primary" style={{padding:"10px",fontSize:14,width:"100%"}} onClick={()=>setModal(l)}>Buy day pass · $50</button>
+              }
+            </div>
+          </div>
+        ))}
+        <div style={{height:20}}/>
+      </div>
+      {modal&&!purchased&&(
+        <div className="modal-overlay" onClick={()=>setModal(null)}>
+          <div className="modal-sheet" onClick={e=>e.stopPropagation()}>
+            <div className="modal-handle"/>
+            <div style={{fontSize:18,fontWeight:700,color:"#fff",marginBottom:4}}>Buy Day Pass</div>
+            <div style={{fontSize:13,color:"#5a5a72",marginBottom:20}}>{modal.name} · Valid today only</div>
+            <div style={{background:"#1e1e30",borderRadius:14,padding:"14px 16px",marginBottom:16}}>
+              {[["Lounge access","Included"],["Food & drinks","Included"],["Shower","Included"],["Total","$50.00"]].map(([k,v],i)=>(
+                <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:i<3?"1px solid rgba(255,255,255,0.04)":"none"}}>
+                  <span style={{fontSize:14,color:i===3?"#fff":"#8a8aa2",fontWeight:i===3?700:400}}>{k}</span>
+                  <span style={{fontSize:14,color:"#fff",fontWeight:500}}>{v}</span>
+                </div>
+              ))}
+            </div>
+            <button className="btn-primary" onClick={()=>{setPurchased(true);setModal(null);}}>Pay with Apple Pay · $50</button>
+          </div>
+        </div>
+      )}
+      {purchased&&(
+        <div className="modal-overlay">
+          <div className="modal-sheet">
+            <div style={{textAlign:"center",padding:"20px 0 10px"}}>
+              <div style={{fontSize:56,marginBottom:12}}>🎉</div>
+              <div style={{fontSize:22,fontWeight:800,color:"#fff",marginBottom:8}}>Access confirmed!</div>
+              <div style={{fontSize:14,color:"#5a5a72",lineHeight:1.6,marginBottom:24}}>Show QR code at the door</div>
+              <div style={{background:"#fff",borderRadius:16,padding:16,width:148,margin:"0 auto 20px"}}>
+                <div style={{width:116,height:116,background:"repeating-linear-gradient(45deg,#000 0px,#000 4px,#fff 4px,#fff 8px)",margin:"0 auto"}}/>
+              </div>
+              <button className="btn-ghost" onClick={()=>{setPurchased(false);onBack();}}>Done</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CompensationScreen=({onBack})=>{
+  const[step,setStep]=useState(0);
+  const[email,setEmail]=useState("max@example.com");
+  const[submitted,setSubmitted]=useState(false);
+  if(submitted) return(
+    <div className="screen slide-in"><div className="scroll"><div style={{textAlign:"center",padding:"60px 32px 32px"}}>
+      <div style={{fontSize:64,marginBottom:16}}>📨</div>
+      <div style={{fontSize:26,fontWeight:800,color:"#fff",marginBottom:12}}>Claim submitted!</div>
+      <div style={{fontSize:14,color:"#5a5a72",lineHeight:1.7,marginBottom:28}}>We've filed your EU261 claim with Lufthansa. Airlines have 14 days to respond.</div>
+      <div style={{background:"#141420",borderRadius:20,border:"1px solid rgba(52,211,153,0.2)",padding:20,marginBottom:20}}>
+        <div className="amount-glow">€600</div>
+        <div style={{fontSize:12,color:"#5a5a72",textAlign:"center",marginTop:4}}>Maximum entitlement · EU261/2004</div>
+      </div>
+    </div></div>
+    <div style={{padding:"0 16px 20px",flexShrink:0}}><button className="btn-ghost" onClick={onBack}>Back to trips</button></div></div>
+  );
+  return(
+    <div className="screen slide-in">
+      <div className="nav-bar"><span className="nav-back" onClick={onBack}>‹ Back</span><span className="nav-title">Compensation Claim</span></div>
+      <div className="scroll">
+        <div className="card"><div className="card-body" style={{textAlign:"center"}}>
+          <div style={{fontSize:12,color:"#5a5a72",textTransform:"uppercase",letterSpacing:"0.6px",marginBottom:8}}>You may be owed</div>
+          <div className="amount-glow">€600</div>
+          <div style={{fontSize:13,color:"#5a5a72",marginTop:4}}>EU Regulation 261/2004 · LH 441 cancellation</div>
+          <div style={{marginTop:12,display:"flex",justifyContent:"center",gap:8}}>
+            <span className="badge badge-green">Eligible</span>
+            <span className="badge badge-green">EU route</span>
+          </div>
+        </div></div>
+        <div style={{padding:"0 20px 16px"}}>
+          <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:16}}>Claim progress</div>
+          {[
+            {title:"Flight verified",      desc:"LH 441 · JFK→MUC cancelled 2h early",state:"done"},
+            {title:"Eligibility confirmed", desc:"EU261 applies · EU carrier on EU route", state:"done"},
+            {title:"Submit claim",          desc:"Filed directly with Lufthansa",          state:step>=2?"done":"active"},
+            {title:"Airline response",      desc:"Expected within 14 days",                state:step>=2?"active":"pending"},
+          ].map((s,i)=>(
+            <div key={i} className="comp-step">
+              <div className={`step-num step-${s.state}`}>{s.state==="done"?"✓":i+1}</div>
+              <div className="step-content"><div className="step-title">{s.title}</div><div className="step-desc">{s.desc}</div></div>
+            </div>
+          ))}
+        </div>
+        {step<2&&<div style={{padding:"0 16px 8px"}}>
+          <div style={{fontSize:13,color:"#5a5a72",marginBottom:8}}>Confirm your email for updates</div>
+          <input className="input-field" value={email} onChange={e=>setEmail(e.target.value)}/>
+        </div>}
+        <div style={{height:20}}/>
+      </div>
+      <div style={{padding:"0 16px 20px",flexShrink:0}}>
+        {step<2
+          ?<button className="btn-primary" onClick={()=>setStep(2)}>Submit claim · No win, no fee</button>
+          :<button className="btn-primary" onClick={()=>setSubmitted(true)}>Confirm & submit →</button>
+        }
+        <div style={{textAlign:"center",marginTop:10,fontSize:11,color:"#3a3a52"}}>25% commission only if you receive payment</div>
+      </div>
+    </div>
+  );
+};
+
+const EsimScreen=({onBack})=>{
+  const[sel,setSel]=useState(null);
+  const[purchased,setPurchased]=useState(false);
+  if(purchased) return(
+    <div className="screen slide-in"><div className="scroll"><div style={{textAlign:"center",padding:"60px 32px 32px"}}>
+      <div style={{fontSize:64,marginBottom:16}}>📶</div>
+      <div style={{fontSize:26,fontWeight:800,color:"#fff",marginBottom:12}}>eSIM activated!</div>
+      <div style={{fontSize:14,color:"#5a5a72",lineHeight:1.7,marginBottom:28}}>Auto-connects when you land at MUC.</div>
+      <div style={{background:"#141420",borderRadius:20,border:"1px solid rgba(77,166,255,0.15)",padding:20,marginBottom:20}}>
+        {[["Plan","10 GB · 30 days"],["Country","🇩🇪 Germany"],["Status","Active"],["Auto-connects","On landing at MUC"]].map(([k,v])=>(
+          <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+            <span style={{fontSize:14,color:"#5a5a72"}}>{k}</span><span style={{fontSize:14,color:"#fff",fontWeight:500}}>{v}</span>
+          </div>
+        ))}
+      </div>
+    </div></div>
+    <div style={{padding:"0 16px 20px",flexShrink:0}}><button className="btn-ghost" onClick={onBack}>Back to trips</button></div></div>
+  );
+  return(
+    <div className="screen slide-in">
+      <div className="nav-bar"><span className="nav-back" onClick={onBack}>‹ Back</span><span className="nav-title">eSIM · Data Plans</span></div>
+      <div className="scroll">
+        <div className="alert-banner purple"><span className="alert-icon">📶</span><div><div className="alert-title" style={{color:"#a78bfa"}}>Stay connected in Germany</div><div className="alert-body">Activates automatically when you land at MUC</div></div></div>
+        <div style={{padding:"0 20px 8px",fontSize:11,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.6px"}}>Recommended for your trip</div>
+        <div style={{padding:"0 16px"}}>
+          {esimPlans.map(p=>(
+            <div key={p.id} className="esim-card" style={{border:sel===p.id?"1px solid #a78bfa":"1px solid rgba(255,255,255,0.07)",background:sel===p.id?"rgba(167,139,250,0.06)":"#1a1a2a"}} onClick={()=>setSel(p.id)}>
+              <span style={{fontSize:30}}>{p.flag}</span>
+              <div style={{flex:1}}><div style={{fontSize:15,fontWeight:700,color:"#fff"}}>{p.country}</div><div style={{fontSize:12,color:"#5a5a72",marginTop:2}}>{p.data} · {p.duration} · {p.provider}</div></div>
+              <div style={{textAlign:"right"}}><div style={{fontSize:17,fontWeight:700,color:"#fff"}}>{p.price}</div>{sel===p.id&&<div style={{fontSize:14,color:"#a78bfa",marginTop:4}}>✓ Selected</div>}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{height:20}}/>
+      </div>
+      <div style={{padding:"0 16px 20px",flexShrink:0}}>
+        <button className="btn-primary" disabled={!sel} onClick={()=>sel&&setPurchased(true)} style={{opacity:sel?1:0.4,background:sel?"linear-gradient(135deg,#7c3aed,#a78bfa)":undefined}}>
+          {sel?`Buy ${esimPlans.find(p=>p.id===sel)?.price} · Apple Pay`:"Select a plan"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════
+   APP SHELL
+══════════════════════════════════════════════════════════ */
+const App = () => {
+  const [screen, setScreen] = useState("trips");
+  const [tab, setTab]       = useState("trips");
+
+  const navigate = (s) => {
+    const tabScreens = ["trips","track","log","map"];
+    if(tabScreens.includes(s)) { setTab(s); setScreen(s); }
+    else setScreen(s);
+  };
+
+  const goBack = () => {
+    const parentMap = { cancellation:"trips", lounges:"trips", compensation:"trips", esim:"trips", risk:"trips" };
+    navigate(parentMap[screen] || tab);
+  };
+
+  const renderScreen = () => {
+    switch(screen) {
+      case "trips":        return <TripsScreen onNavigate={navigate}/>;
+      case "track":        return <TrackScreen onNavigate={navigate}/>;
+      case "log":          return <LogScreen/>;
+      case "map":          return <MapScreen onNavigate={navigate}/>;
+      case "cancellation": return <CancellationScreen onBack={goBack} onNavigate={navigate}/>;
+      case "lounges":      return <LoungesScreen onBack={goBack}/>;
+      case "compensation": return <CompensationScreen onBack={goBack}/>;
+      case "esim":         return <EsimScreen onBack={goBack}/>;
+      case "risk":         return <ConnectionRiskScreen onBack={goBack}/>;
+      default:             return <TripsScreen onNavigate={navigate}/>;
+    }
+  };
+
+  const showTab = !["cancellation","lounges","compensation","esim","risk"].includes(screen);
+
+  return (
+    <div className="device-shell">
+      <div className="notch"/>
+      <StatusBar/>
+      {renderScreen()}
+      {showTab && <TabBar active={tab} onTab={navigate}/>}
+      <HomeIndicator/>
+    </div>
+  );
+};
+
+ReactDOM.render(<App/>, document.getElementById("root"));
+</script>
+</body>
+</html>

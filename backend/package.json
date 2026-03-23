@@ -1,0 +1,23 @@
+{
+  "name": "flight-tracker-backend",
+  "version": "1.0.0",
+  "description": "Back end server for the Flight Tracker iOS app",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@supabase/supabase-js": "^2.45.0",
+    "fastify": "^5.0.0",
+    "node-apn": "^6.0.0",
+    "node-cron": "^3.0.3",
+    "node-fetch": "^3.3.2",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
