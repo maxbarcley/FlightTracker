@@ -197,39 +197,6 @@ const MAP_FLIGHTS = [
   { id:2, number:"UA 931",  airline:"United Airlines", from:"MUC", to:"JFK", dep:"13:20", arr:"16:45",   date:"Mar 29", status:"scheduled", color:"#4da6ff", aircraftLat:null, aircraftLng:null, aircraftHdg:285, duration:"9h 25m", progress:0 },
 ];
 
-const DEPARTURES = [
-  { time:"18:35", num:"LH 441",  dest:"Munich MUC",       gate:"B22", status:"Cancelled",  statusClass:"badge-red",    delay:null   },
-  { time:"18:55", num:"BA 178",  dest:"London LHR",        gate:"A12", status:"Boarding",   statusClass:"badge-green",  delay:null   },
-  { time:"19:10", num:"EK 202",  dest:"Dubai DXB",         gate:"C4",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
-  { time:"19:25", num:"DL 402",  dest:"Los Angeles LAX",   gate:"B6",  status:"+28 min",    statusClass:"badge-orange", delay:28     },
-  { time:"19:40", num:"AF 011",  dest:"Paris CDG",         gate:"A8",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
-  { time:"20:00", num:"SQ 026",  dest:"Singapore SIN",     gate:"C9",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
-  { time:"20:15", num:"JL 006",  dest:"Tokyo NRT",         gate:"B15", status:"On Time",    statusClass:"badge-blue",   delay:null   },
-  { time:"20:30", num:"UA 901",  dest:"Chicago ORD",       gate:"A3",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
-  { time:"21:00", num:"AA 100",  dest:"London LHR",        gate:"B9",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
-];
-const ARRIVALS = [
-  { time:"17:42", num:"LH 400",  dest:"Frankfurt FRA",     gate:"B20", status:"Landed",     statusClass:"badge-green",  delay:null   },
-  { time:"18:05", num:"QR 701",  dest:"Doha DOH",          gate:"C2",  status:"Landed",     statusClass:"badge-green",  delay:null   },
-  { time:"18:20", num:"DL 401",  dest:"Atlanta ATL",       gate:"A5",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
-  { time:"18:50", num:"UA 84",   dest:"San Francisco SFO", gate:"B3",  status:"+41 min",    statusClass:"badge-orange", delay:41     },
-  { time:"19:05", num:"CX 830",  dest:"Hong Kong HKG",     gate:"C6",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
-  { time:"19:30", num:"AA 6",    dest:"Los Angeles LAX",   gate:"A11", status:"On Time",    statusClass:"badge-blue",   delay:null   },
-  { time:"19:55", num:"VS 45",   dest:"London LHR",        gate:"B7",  status:"On Time",    statusClass:"badge-blue",   delay:null   },
-];
-
-// Per-flight detail data for FIDS tap
-const FIDS_DETAIL = {
-  "LH 441": { airline:"Lufthansa",         from:"JFK", to:"MUC", dep:"18:35", arr:"08:10+1", duration:"8h 35m", status:"cancelled", terminal:"1", gate:"B22", aircraft:"A340", tail:"D-AIHE", alt:null,    spd:null,   hdg:null,  inbound:"LH 400 · FRA → JFK · Cancelled", inboundStatus:"Cancelled", co2:"612 kg" },
-  "BA 178": { airline:"British Airways",   from:"JFK", to:"LHR", dep:"18:55", arr:"07:10+1", duration:"7h 15m", status:"boarding",  terminal:"7", gate:"A12", aircraft:"B777", tail:"G-YMMS", alt:null,    spd:null,   hdg:null,  inbound:"BA 177 · LHR → JFK · Landed",    inboundStatus:"Ready",     co2:"547 kg" },
-  "EK 202": { airline:"Emirates",          from:"JFK", to:"DXB", dep:"19:10", arr:"17:30+1", duration:"12h 20m",status:"scheduled", terminal:"4", gate:"C4",  aircraft:"A380", tail:"A6-EDF", alt:null,    spd:null,   hdg:null,  inbound:"EK 201 · DXB → JFK · On time",   inboundStatus:"Ready",     co2:"1,024 kg"},
-  "DL 402": { airline:"Delta",             from:"JFK", to:"LAX", dep:"19:25", arr:"23:10",   duration:"5h 45m", status:"delayed",   terminal:"2", gate:"B6",  aircraft:"B737", tail:"N320DN", alt:null,    spd:null,   hdg:null,  inbound:"DL 401 · LAX → JFK · Delayed",   inboundStatus:"Delayed",   co2:"284 kg" },
-  "AF 011": { airline:"Air France",        from:"JFK", to:"CDG", dep:"19:40", arr:"08:45+1", duration:"7h 05m", status:"scheduled", terminal:"1", gate:"A8",  aircraft:"B777", tail:"F-GSPY", alt:null,    spd:null,   hdg:null,  inbound:"AF 012 · CDG → JFK · On time",   inboundStatus:"Ready",     co2:"521 kg" },
-  "SQ 026": { airline:"Singapore Airlines",from:"JFK", to:"SIN", dep:"20:00", arr:"06:25+2", duration:"18h 25m",status:"scheduled", terminal:"4", gate:"C9",  aircraft:"A350", tail:"9V-SHB", alt:null,    spd:null,   hdg:null,  inbound:"SQ 025 · SIN → JFK · On time",   inboundStatus:"Ready",     co2:"1,680 kg"},
-  "LH 400": { airline:"Lufthansa",         from:"FRA", to:"JFK", dep:"10:15", arr:"13:40",   duration:"9h 25m", status:"landed",    terminal:"1", gate:"B20", aircraft:"A330", tail:"D-AIKE", alt:null,    spd:null,   hdg:null,  inbound:null,                              inboundStatus:null,        co2:"588 kg" },
-  "UA 84":  { airline:"United Airlines",   from:"SFO", to:"JFK", dep:"07:30", arr:"16:15",   duration:"5h 45m", status:"delayed",   terminal:"4", gate:"B3",  aircraft:"B767", tail:"N641UA", alt:38200,   spd:463,    hdg:85,    inbound:null,                              inboundStatus:null,        co2:"301 kg" },
-  "UA 931": { airline:"United Airlines",   from:"MUC", to:"JFK", dep:"13:20", arr:"16:45",   duration:"9h 25m", status:"scheduled", terminal:"1", gate:"A7",  aircraft:"B767", tail:"N648UA", alt:null,    spd:null,   hdg:null,  inbound:"UA 930 · JFK → MUC · On time",   inboundStatus:"Ready",     co2:"574 kg" },
-};
 
 const FLIGHT_LOG = [
   { year:2026, flights:[
@@ -280,14 +247,6 @@ const YEAR_STATS = [
 ];
 // Totals: 26 flights, 101,439 miles
 
-const SEARCH_SUGGESTIONS = [
-  { type:"flight",  label:"LH 441", sub:"JFK → MUC · Today 18:35",       icon:"flight" },
-  { type:"flight",  label:"BA 178", sub:"JFK → LHR · Today 18:55",       icon:"flight" },
-  { type:"flight",  label:"EK 202", sub:"JFK → DXB · Today 19:10",       icon:"flight" },
-  { type:"airport", label:"JFK",    sub:"John F. Kennedy · New York",     icon:"airport" },
-  { type:"airport", label:"LHR",    sub:"Heathrow · London",              icon:"airport" },
-  { type:"airport", label:"MUC",    sub:"Franz Josef Strauss · Munich",   icon:"airport" },
-];
 
 /* ══════════════════════════════════════════════════════════
    UTILS
@@ -615,7 +574,7 @@ const MiniGlobe = ({ flights }) => {
 ══════════════════════════════════════════════════════════ */
 const AddFlightModal = ({ onClose, onAdd }) => {
   const [query,   setQuery]   = useState("");
-  const [date,    setDate]    = useState("");
+  const [date,    setDate]    = useState(new Date().toISOString().slice(0,10));
   const [loading, setLoading] = useState(false);
   const [result,  setResult]  = useState(null);
   const [error,   setError]   = useState(null);
@@ -624,27 +583,50 @@ const AddFlightModal = ({ onClose, onAdd }) => {
     const callsign = query.replace(/\s/g, '').toUpperCase();
     if (!callsign) return;
     setLoading(true); setError(null); setResult(null);
-    try {
-      const res  = await fetch(`https://opensky-network.org/api/states/all?callsign=${callsign}`);
-      const data = await res.json();
-      if (data.states && data.states.length > 0) {
-        const s = data.states[0];
-        setResult({
-          number:   (s[1] || '').trim(),
-          country:  s[2],
-          lat:      s[6],
-          lng:      s[5],
-          altitude: s[7] ? Math.round(s[7] * 3.281) : null,
-          speed:    s[9] ? Math.round(s[9] * 1.944) : null,
-          onGround: s[8],
-        });
-      } else {
-        setError("Not currently in live traffic. You can still add it manually.");
-      }
-    } catch(e) {
-      setError("Couldn't reach live data. You can still add manually.");
+
+    // Run OpenSky + AeroDataBox in parallel
+    const [liveData, adbData] = await Promise.all([
+      openskyLookup(callsign),
+      getApiKey() ? adbGet(`/flights/number/${callsign}/${date}`).then(d => Array.isArray(d) ? d[0] : d).catch(() => null) : Promise.resolve(null),
+    ]);
+
+    if (!liveData && !adbData) {
+      setError("Flight not found. Check the number, date, and make sure your RapidAPI key is set.");
+    } else {
+      const fl = adbData;
+      setResult({
+        number:      fl?.number || (liveData?.callsign) || callsign,
+        airline:     fl?.airline?.name || null,
+        fromCode:    fl?.departure?.airport?.iata || null,
+        fromCity:    fl?.departure?.airport?.municipalityName || null,
+        toCode:      fl?.arrival?.airport?.iata || null,
+        toCity:      fl?.arrival?.airport?.municipalityName || null,
+        depTime:     fl ? fmtLocalTime(fl.departure?.scheduledTime?.local || fl.departure?.scheduledTime?.utc) : null,
+        arrTime:     fl ? fmtLocalTime(fl.arrival?.scheduledTime?.local   || fl.arrival?.scheduledTime?.utc)   : null,
+        status:      fl ? adbStatusToNorm(fl.status) : (liveData && !liveData.onGround ? "active" : "scheduled"),
+        altitude:    liveData?.altitude || null,
+        speed:       liveData?.speed    || null,
+        onGround:    liveData?.onGround ?? null,
+        live:        !!liveData,
+      });
     }
     setLoading(false);
+  };
+
+  const doAdd = () => {
+    if (!result) return;
+    onAdd({
+      number:   result.number,
+      date:     date || "Today",
+      airline:  result.airline,
+      from:     result.fromCode,
+      to:       result.toCode,
+      depTime:  result.depTime,
+      arrTime:  result.arrTime,
+      status:   result.status,
+      live:     result.live,
+    });
+    onClose();
   };
 
   return (
@@ -655,7 +637,7 @@ const AddFlightModal = ({ onClose, onAdd }) => {
         <div style={{display:"flex", gap:8, marginBottom:10}}>
           <input className="input-field" style={{margin:0, flex:1}} placeholder="Flight number (e.g. LH 441)"
             value={query} onChange={e => setQuery(e.target.value)}
-            onKeyDown={e => e.key==='Enter' && search()}/>
+            onKeyDown={e => e.key==='Enter' && search()} autoCapitalize="characters"/>
           <button className="btn-secondary" style={{flexShrink:0, borderRadius:12, padding:"0 16px", cursor:"pointer"}}
             onClick={search} disabled={!query || loading}>{loading ? "…" : "Search"}</button>
         </div>
@@ -665,23 +647,46 @@ const AddFlightModal = ({ onClose, onAdd }) => {
 
         {result && (
           <div style={{background:"rgba(77,166,255,0.08)", border:"1px solid rgba(77,166,255,0.2)", borderRadius:14, padding:16, marginBottom:12}}>
-            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8}}>
-              <div style={{fontSize:17, fontWeight:700, color:"#fff"}}>{result.number}</div>
-              <div className="live-badge"><div className="live-dot"/><span>LIVE</span></div>
+            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10}}>
+              <div>
+                {result.airline && <div style={{fontSize:11, color:"#5a5a72", marginBottom:3}}>{result.airline}</div>}
+                <div style={{fontSize:17, fontWeight:700, color:"#fff"}}>{result.number}</div>
+              </div>
+              <div style={{display:"flex", gap:6, alignItems:"center"}}>
+                {result.live && <div className="live-badge"><div className="live-dot"/><span>LIVE</span></div>}
+                <FlightStatusBadge status={result.status}/>
+              </div>
             </div>
-            <div style={{fontSize:13, color:"#8a8aa2"}}>
-              {result.onGround ? "On ground" : `${result.altitude ? result.altitude.toLocaleString()+" ft" : "—"} · ${result.speed ? result.speed+" kts" : "—"}`}
-            </div>
-            <button className="btn-primary" style={{marginTop:14}}
-              onClick={() => { onAdd({ number: result.number, date: date || "Today", live: true }); onClose(); }}>
-              Add to My Trips
-            </button>
+
+            {result.fromCode && result.toCode && (
+              <div style={{display:"flex", alignItems:"center", marginBottom:10}}>
+                <div>
+                  <div style={{fontSize:22, fontWeight:800, color:"#fff"}}>{result.fromCode}</div>
+                  {result.fromCity && <div style={{fontSize:11, color:"#5a5a72"}}>{result.fromCity}</div>}
+                  {result.depTime && <div style={{fontSize:12, fontWeight:600, color:"#fff", marginTop:2}}>{result.depTime}</div>}
+                </div>
+                <div style={{flex:1, height:1, background:"linear-gradient(90deg,#2a2a3a,#4da6ff,#2a2a3a)", margin:"0 12px"}}/>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:22, fontWeight:800, color:"#fff"}}>{result.toCode}</div>
+                  {result.toCity && <div style={{fontSize:11, color:"#5a5a72"}}>{result.toCity}</div>}
+                  {result.arrTime && <div style={{fontSize:12, fontWeight:600, color:"#fff", marginTop:2}}>{result.arrTime}</div>}
+                </div>
+              </div>
+            )}
+
+            {result.live && result.altitude && !result.onGround && (
+              <div style={{fontSize:13, color:"#8a8aa2", marginBottom:10}}>
+                {result.altitude.toLocaleString()} ft · {result.speed} kts
+              </div>
+            )}
+
+            <button className="btn-primary" onClick={doAdd}>Add to My Trips</button>
           </div>
         )}
 
         <button className="btn-ghost" onClick={() => { if(query) { onAdd({ number: query.toUpperCase(), date: date || "Upcoming" }); onClose(); } }}
-          disabled={!query} style={{opacity: query ? 1 : 0.4}}>
-          Add manually
+          disabled={!query} style={{opacity: query ? 1 : 0.4, marginTop: result ? 0 : 4}}>
+          Add manually without search
         </button>
       </div>
     </div>
@@ -788,12 +793,30 @@ const TripsScreen = ({ onNavigate }) => {
 
         {addedFlights.map((f, i) => (
           <div key={i} className="card">
-            <div className="card-body" style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div>
-                <div style={{fontSize:11,color:"#5a5a72",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.5px"}}>{f.date}</div>
-                <div style={{fontSize:17,fontWeight:700,color:"#fff"}}>{f.number}</div>
+            <div className="card-body">
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom: f.from&&f.to ? 10 : 0}}>
+                <div>
+                  <div style={{fontSize:11,color:"#5a5a72",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.5px"}}>{f.date}{f.airline ? ` · ${f.airline}` : ""}</div>
+                  <div style={{fontSize:17,fontWeight:700,color:"#fff"}}>{f.number}</div>
+                </div>
+                <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                  {f.live && <div className="live-badge"><div className="live-dot"/><span>LIVE</span></div>}
+                  <FlightStatusBadge status={f.status||"scheduled"}/>
+                </div>
               </div>
-              {f.live ? <div className="live-badge"><div className="live-dot"/><span>LIVE</span></div> : <FlightStatusBadge status="scheduled"/>}
+              {f.from && f.to && (
+                <div style={{display:"flex",alignItems:"center"}}>
+                  <div>
+                    <div style={{fontSize:22,fontWeight:800,color:"#fff"}}>{f.from}</div>
+                    {f.depTime && <div style={{fontSize:12,fontWeight:600,color:"#fff",marginTop:2}}>{f.depTime}</div>}
+                  </div>
+                  <div style={{flex:1,height:1,background:"linear-gradient(90deg,#2a2a3a,#4da6ff,#2a2a3a)",margin:"0 12px"}}/>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:22,fontWeight:800,color:"#fff"}}>{f.to}</div>
+                    {f.arrTime && <div style={{fontSize:12,fontWeight:600,color:"#fff",marginTop:2}}>{f.arrTime}</div>}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -806,62 +829,174 @@ const TripsScreen = ({ onNavigate }) => {
 };
 
 /* ══════════════════════════════════════════════════════════
+   LIVE API HELPERS
+══════════════════════════════════════════════════════════ */
+const ADB_BASE = 'https://aerodatabox.p.rapidapi.com';
+const ADB_HOST = 'aerodatabox.p.rapidapi.com';
+function getApiKey()   { return localStorage.getItem('flightapp_key') || ''; }
+function saveApiKey(k) { localStorage.setItem('flightapp_key', k); }
+
+async function adbGet(path) {
+  const key = getApiKey();
+  if (!key) { const e = new Error('NO_KEY'); e.code = 'NO_KEY'; throw e; }
+  const res = await fetch(`${ADB_BASE}${path}`, {
+    headers: { 'x-rapidapi-host': ADB_HOST, 'x-rapidapi-key': key }
+  });
+  if (!res.ok) throw new Error(`ADB ${res.status}`);
+  return res.json();
+}
+
+async function openskyLookup(flightNum) {
+  const cs = flightNum.replace(/\s/g,'').toUpperCase();
+  try {
+    const res = await fetch(`https://opensky-network.org/api/states/all?callsign=${cs}`);
+    if (!res.ok) return null;
+    const d = await res.json();
+    if (!d.states?.length) return null;
+    const s = d.states[0];
+    return {
+      callsign: (s[1]||'').trim(), lat: s[6], lng: s[5],
+      altitude: s[7] ? Math.round(s[7]*3.281) : null,
+      speed:    s[9] ? Math.round(s[9]*1.944) : null,
+      heading:  Math.round(s[10]||0),
+      vRate:    s[11] ? Math.round(s[11]*196.85) : 0,
+      onGround: s[8],
+    };
+  } catch { return null; }
+}
+
+function fmtUtcTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.getUTCHours().toString().padStart(2,'0') + ':' + d.getUTCMinutes().toString().padStart(2,'0');
+}
+function fmtLocalTime(iso) {
+  if (!iso) return '—';
+  // iso like "2024-03-23T19:35+01:00" — extract HH:MM directly
+  const m = iso.match(/T(\d{2}:\d{2})/);
+  return m ? m[1] : fmtUtcTime(iso);
+}
+function fmtAdbStatus(raw) {
+  if (!raw) return 'Scheduled';
+  const m = { EnRoute:'En Route', Landed:'Landed', Arrived:'Arrived', Cancelled:'Cancelled',
+    Delayed:'Delayed', Boarding:'Boarding', GateClosed:'Gate Closed', Scheduled:'Scheduled',
+    Diverted:'Diverted', Taxiing:'Taxiing', Departed:'Departed' };
+  return m[raw] || raw;
+}
+function adbStatusToNorm(raw) {
+  if (!raw) return 'scheduled';
+  const s = raw.toLowerCase();
+  if (s.includes('enroute')||s.includes('airborne')||s.includes('departed')) return 'active';
+  if (s.includes('land')||s.includes('arrived')) return 'landed';
+  if (s.includes('cancel')) return 'cancelled';
+  if (s.includes('delay')) return 'delayed';
+  if (s.includes('boarding')) return 'boarding';
+  return 'scheduled';
+}
+
+/* ══════════════════════════════════════════════════════════
    TRACK SCREEN
 ══════════════════════════════════════════════════════════ */
 const TrackScreen = ({ onNavigate }) => {
-  const [query, setQuery]       = useState("");
-  const [mode, setMode]         = useState("flights");
-  const [searching, setSearching] = useState(false);
-  const [showResult, setShowResult] = useState(null);
-  const [boardTab, setBoardTab] = useState("dep");
-  const [selectedFlight, setSelectedFlight] = useState(null);
+  const [query,        setQuery]        = useState("");
+  const [mode,         setMode]         = useState("flights");
+  const [loading,      setLoading]      = useState(false);
+  const [error,        setError]        = useState(null);
+  const [view,         setView]         = useState("search");
+  const [flightData,   setFlightData]   = useState(null);
+  const [livePos,      setLivePos]      = useState(null);
+  const [boardFlights, setBoardFlights] = useState(null);
+  const [boardTab,     setBoardTab]     = useState("dep");
+  const [apiKey,       setApiKey]       = useState(getApiKey);
+  const [keyInput,     setKeyInput]     = useState("");
+  const [showKeyModal, setShowKeyModal] = useState(false);
 
-  const handleSearch = (suggestion) => {
-    setQuery(suggestion.label);
-    setSearching(false);
-    if (suggestion.type === "flight") {
-      setSelectedFlight(suggestion.label);
-      setShowResult("flight");
+  const reset = () => { setView("search"); setFlightData(null); setLivePos(null); setBoardFlights(null); setError(null); };
+
+  const saveKey = () => { saveApiKey(keyInput.trim()); setApiKey(keyInput.trim()); setShowKeyModal(false); setKeyInput(""); };
+
+  const doFlightSearch = async (num) => {
+    const q = (num || query).trim(); if (!q) return;
+    setLoading(true); setError(null); setFlightData(null); setLivePos(null);
+    const [live] = await Promise.all([openskyLookup(q)]);
+    if (live) setLivePos(live);
+    if (getApiKey()) {
+      try {
+        const clean = q.replace(/\s/g,'').toUpperCase();
+        const today = new Date().toISOString().slice(0,10);
+        const data = await adbGet(`/flights/number/${clean}/${today}`);
+        const fl = Array.isArray(data) ? data[0] : data;
+        if (fl) { setFlightData(fl); setView("flight"); }
+        else setError("Flight not found for today. Check the number or try yesterday.");
+      } catch(e) {
+        if (e.code === 'NO_KEY') setError("Add your RapidAPI key to see scheduled flight data.");
+        else { setError("Couldn't fetch flight data. Check the flight number."); if (live) setView("flight"); }
+      }
+    } else if (live) {
+      setView("flight");
     } else {
-      setShowResult("airport");
+      setError("Flight not found in live traffic. Add a RapidAPI key for scheduled data too.");
     }
+    setLoading(false);
   };
 
-  const filteredSuggestions = SEARCH_SUGGESTIONS.filter(s =>
-    (mode === "flights" ? s.type === "flight" : s.type === "airport") &&
-    (query === "" || s.label.toLowerCase().includes(query.toLowerCase()))
-  );
+  const doAirportSearch = async (tab) => {
+    const code = query.replace(/\s/g,'').toUpperCase(); if (!code) return;
+    const dir = tab || boardTab;
+    if (!getApiKey()) { setError("A RapidAPI key is required for airport boards."); return; }
+    setLoading(true); setError(null);
+    try {
+      const now = new Date();
+      const from = now.toISOString().slice(0,16);
+      const to   = new Date(now.getTime() + 5*3600*1000).toISOString().slice(0,16);
+      const direction = dir === 'dep' ? 'Departure' : 'Arrival';
+      const data = await adbGet(`/flights/airports/icao/${code}/${from}/${to}?withLeg=true&direction=${direction}&withCancelled=true&withCodeshared=false&withPrivate=false`);
+      const items = dir === 'dep' ? (data.departures?.items||[]) : (data.arrivals?.items||[]);
+      setBoardFlights(items); setView("airport");
+    } catch(e) {
+      setError("Airport not found. Use the 4-letter ICAO code — e.g. KJFK · EDDM · EGLL · LEBL");
+    }
+    setLoading(false);
+  };
 
-  // ── Airport board ──────────────────────────────────────
-  if (showResult === "airport") {
-    const board = boardTab === "dep" ? DEPARTURES : ARRIVALS;
+  const handleGo = () => mode === "flights" ? doFlightSearch() : doAirportSearch();
+
+  // ── Airport FIDS board ─────────────────────────────────
+  if (view === "airport") {
+    const badgeMap = {active:"badge-green",landed:"badge-green",cancelled:"badge-red",delayed:"badge-orange",boarding:"badge-purple",scheduled:"badge-blue"};
     return (
       <div className="screen slide-in">
         <div className="nav-bar">
-          <span className="nav-back" onClick={()=>{setShowResult(null);setQuery("");}}>‹ Back</span>
-          <span className="nav-title">{query} · Live Board</span>
+          <span className="nav-back" onClick={reset}>‹ Back</span>
+          <span className="nav-title">{query.toUpperCase()} · Live Board</span>
         </div>
         <div className="seg-ctrl" style={{margin:"0 16px 8px"}}>
-          <button className={`seg-btn ${boardTab==="dep"?"active":"inactive"}`} onClick={()=>setBoardTab("dep")}>Departures</button>
-          <button className={`seg-btn ${boardTab==="arr"?"active":"inactive"}`} onClick={()=>setBoardTab("arr")}>Arrivals</button>
+          <button className={`seg-btn ${boardTab==="dep"?"active":"inactive"}`} onClick={()=>{setBoardTab("dep");doAirportSearch("dep");}}>Departures</button>
+          <button className={`seg-btn ${boardTab==="arr"?"active":"inactive"}`} onClick={()=>{setBoardTab("arr");doAirportSearch("arr");}}>Arrivals</button>
         </div>
         <div style={{display:"flex",padding:"6px 16px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-          <div style={{fontSize:10,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.5px",width:46}}>Time</div>
-          <div style={{fontSize:10,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.5px",width:62}}>Flight</div>
-          <div style={{fontSize:10,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.5px",flex:1}}>Destination</div>
-          <div style={{fontSize:10,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.5px",width:36,textAlign:"right"}}>Gate</div>
-          <div style={{fontSize:10,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.5px",width:76,textAlign:"right"}}>Status</div>
+          {["Time","Flight",null,"Gate","Status"].map((h,i)=>(
+            <div key={i} style={{fontSize:10,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.5px",...(i===0?{width:46}:i===1?{width:62}:i===2?{flex:1}:i===3?{width:36,textAlign:"right"}:{width:76,textAlign:"right"})}}>{h||"Destination"}</div>
+          ))}
         </div>
         <div className="scroll">
-          {board.map((f,i)=>(
-            <div key={i} className="fids-row" onClick={()=>{setSelectedFlight(f.num);setShowResult("flight");}}>
-              <div className="fids-time">{f.time}</div>
-              <div className="fids-num">{f.num}</div>
-              <div className="fids-dest">{f.dest}</div>
-              <div className="fids-gate">{f.gate}</div>
-              <div className="fids-status"><span className={`badge ${f.statusClass}`} style={{fontSize:10,padding:"3px 7px"}}>{f.status}</span></div>
-            </div>
-          ))}
+          {loading && <div style={{padding:32,textAlign:"center",color:"#5a5a72"}}>Loading…</div>}
+          {!loading && boardFlights?.length === 0 && <div style={{padding:32,textAlign:"center",color:"#5a5a72"}}>No flights in this window.</div>}
+          {!loading && boardFlights?.map((f,i) => {
+            const other = boardTab==="dep" ? f.arrival?.airport : f.departure?.airport;
+            const timeIso = boardTab==="dep" ? (f.departure?.scheduledTime?.local||f.departure?.scheduledTime?.utc) : (f.arrival?.scheduledTime?.local||f.arrival?.scheduledTime?.utc);
+            const gate = (boardTab==="dep" ? f.departure?.gate : f.arrival?.gate) || "—";
+            const norm = adbStatusToNorm(f.status);
+            return (
+              <div key={i} className="fids-row" onClick={()=>doFlightSearch(f.number)}>
+                <div className="fids-time">{fmtLocalTime(timeIso)}</div>
+                <div className="fids-num">{f.number}</div>
+                <div className="fids-dest">{other?.iata||"?"} {other?.municipalityName||other?.name||""}</div>
+                <div className="fids-gate">{gate}</div>
+                <div className="fids-status"><span className={`badge ${badgeMap[norm]||"badge-blue"}`} style={{fontSize:10,padding:"3px 7px"}}>{fmtAdbStatus(f.status)}</span></div>
+              </div>
+            );
+          })}
           <div style={{height:20}}/>
         </div>
       </div>
@@ -869,60 +1004,74 @@ const TrackScreen = ({ onNavigate }) => {
   }
 
   // ── Live flight detail ─────────────────────────────────
-  if (showResult === "flight") {
-    const fn = selectedFlight || query;
-    const d  = FIDS_DETAIL[fn] || FIDS_DETAIL["EK 202"];
-    const isLive = d.alt !== null;
+  if (view === "flight") {
+    const fl = flightData;
+    const live = livePos;
+    const flNum   = fl?.number || live?.callsign || query.toUpperCase();
+    const airline = fl?.airline?.name || "";
+    const dep = fl?.departure; const arr = fl?.arrival;
+    const fromCode = dep?.airport?.iata || "—"; const toCode = arr?.airport?.iata || "—";
+    const fromCity = dep?.airport?.municipalityName || dep?.airport?.name || "";
+    const toCity   = arr?.airport?.municipalityName || arr?.airport?.name || "";
+    const depSched  = fmtLocalTime(dep?.scheduledTime?.local||dep?.scheduledTime?.utc);
+    const depActual = dep?.actualTime ? fmtLocalTime(dep.actualTime.local||dep.actualTime.utc) : null;
+    const arrSched  = fmtLocalTime(arr?.scheduledTime?.local||arr?.scheduledTime?.utc);
+    const delay     = dep?.delay || arr?.delay || 0;
+    const status    = fl ? adbStatusToNorm(fl.status) : (live && !live.onGround ? "active" : "scheduled");
+    const lineColor = {active:"#34d399",cancelled:"#ff4b4b",delayed:"#fb923c",landed:"#34d399"}[status]||"#4da6ff";
+    const aircraft  = fl?.aircraft;
+
     return (
       <div className="screen slide-in">
         <div className="nav-bar">
-          <span className="nav-back" onClick={()=>{setShowResult(null);setQuery("");}}>‹ Back</span>
-          <span className="nav-title">{fn}</span>
-          <span className="nav-action" style={{color:"#34d399",fontSize:13}}>+ Add</span>
+          <span className="nav-back" onClick={reset}>‹ Back</span>
+          <span className="nav-title">{flNum}</span>
+          <span className="nav-action" style={{color:"#34d399",cursor:"pointer",fontSize:13}}>+ Add</span>
         </div>
         <div className="scroll">
-          {/* Hero card */}
           <div className="card">
             <div className="card-body">
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
                 <div>
-                  <div style={{fontSize:11,color:"#5a5a72",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.5px"}}>{d.airline} · Today</div>
-                  <div style={{fontSize:18,fontWeight:800,color:"#fff"}}>{fn}</div>
+                  <div style={{fontSize:11,color:"#5a5a72",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.5px"}}>{airline||"—"}</div>
+                  <div style={{fontSize:18,fontWeight:800,color:"#fff"}}>{flNum}</div>
                 </div>
-                <FlightStatusBadge status={d.status}/>
+                <FlightStatusBadge status={status}/>
               </div>
               <div style={{display:"flex",alignItems:"center",marginBottom:10}}>
                 <div>
-                  <div style={{fontSize:28,fontWeight:800,color:"#fff"}}>{d.from}</div>
-                  <div style={{fontSize:11,color:"#5a5a72"}}>{AIRPORTS_GEO[d.from]?.city || d.from}</div>
-                  <div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:3}}>{d.dep}</div>
+                  <div style={{fontSize:28,fontWeight:800,color:"#fff"}}>{fromCode}</div>
+                  <div style={{fontSize:11,color:"#5a5a72"}}>{fromCity}</div>
+                  <div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:3}}>
+                    {depActual && depActual!==depSched
+                      ? <><span style={{textDecoration:"line-through",color:"#5a5a72",marginRight:4}}>{depSched}</span>{depActual}</>
+                      : depSched}
+                  </div>
                 </div>
                 <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"0 12px"}}>
-                  <div style={{fontSize:10,color:"#5a5a72",marginBottom:4}}>{d.duration} · Nonstop</div>
-                  <div style={{width:"100%",height:1,background:`linear-gradient(90deg,#2a2a3a,${d.status==="cancelled"?"#ff4b4b":d.status==="delayed"?"#fb923c":"#34d399"},#2a2a3a)`}}/>
+                  {aircraft?.model && <div style={{fontSize:10,color:"#5a5a72",marginBottom:4}}>{aircraft.model}</div>}
+                  <div style={{width:"100%",height:1,background:`linear-gradient(90deg,#2a2a3a,${lineColor},#2a2a3a)`}}/>
+                  {delay>0 && <div style={{fontSize:10,color:"#fb923c",marginTop:4}}>+{delay} min</div>}
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:28,fontWeight:800,color:"#fff"}}>{d.to}</div>
-                  <div style={{fontSize:11,color:"#5a5a72"}}>{AIRPORTS_GEO[d.to]?.city || d.to}</div>
-                  <div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:3}}>{d.arr}</div>
+                  <div style={{fontSize:28,fontWeight:800,color:"#fff"}}>{toCode}</div>
+                  <div style={{fontSize:11,color:"#5a5a72"}}>{toCity}</div>
+                  <div style={{fontSize:13,fontWeight:600,color:"#fff",marginTop:3}}>{arrSched}</div>
                 </div>
               </div>
-              {/* Flight timeline */}
-              <FlightTimeline status={d.status}/>
             </div>
           </div>
 
-          {/* Live telemetry */}
-          {isLive && (
+          {live && !live.onGround && (
             <div className="card">
               <div className="card-body">
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
                   <div className="live-dot"/>
-                  <span className="live-badge">Live</span>
-                  <span style={{fontSize:12,color:"#5a5a72",marginLeft:4}}>Updated 8s ago</span>
+                  <span style={{fontSize:12,fontWeight:700,color:"#34d399"}}>LIVE</span>
+                  <span style={{fontSize:11,color:"#5a5a72",marginLeft:2}}>via OpenSky Network</span>
                 </div>
                 <div style={{display:"flex"}}>
-                  {[["Altitude",`${numFmt(d.alt)} ft`],["Speed",`${d.spd} kts`],["Heading",`${d.hdg}°`],["V/S","+0 ft/m"]].map(([k,v])=>(
+                  {[["Altitude",live.altitude?`${numFmt(live.altitude)} ft`:"—"],["Speed",live.speed?`${live.speed} kts`:"—"],["Heading",`${live.heading}°`],["V/S",live.vRate?(live.vRate>0?"+":"")+numFmt(live.vRate)+" fpm":"—"]].map(([k,v])=>(
                     <div key={k} style={{flex:1,textAlign:"center"}}>
                       <div style={{fontSize:15,fontWeight:700,color:"#fff"}}>{v}</div>
                       <div style={{fontSize:10,color:"#5a5a72",marginTop:3}}>{k}</div>
@@ -932,46 +1081,30 @@ const TrackScreen = ({ onNavigate }) => {
               </div>
             </div>
           )}
-
-          {/* Terminal info */}
-          <div className="card">
-            <div className="card-body">
-              <div style={{fontSize:11,color:"#5a5a72",textTransform:"uppercase",letterSpacing:"0.6px",marginBottom:12}}>Terminal Info</div>
-              <div style={{display:"flex"}}>
-                {[["Terminal",d.terminal],["Gate",d.gate],["Aircraft",d.aircraft],["Tail",d.tail]].map(([k,v])=>(
-                  <div key={k} style={{flex:1}}>
-                    <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{v}</div>
-                    <div style={{fontSize:11,color:"#5a5a72",marginTop:3}}>{k}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* CO₂ */}
-          <div style={{margin:"0 16px 12px",background:"rgba(52,211,153,0.05)",border:"1px solid rgba(52,211,153,0.12)",borderRadius:16,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <div>
-              <div style={{fontSize:12,fontWeight:700,color:"#34d399"}}>CO₂ Estimate</div>
-              <div style={{fontSize:11,color:"#5a5a72",marginTop:2}}>Per passenger · Economy seat</div>
-            </div>
-            <div style={{fontSize:17,fontWeight:700,color:"#fff"}}>{d.co2}</div>
-          </div>
-
-          {/* Inbound */}
-          {d.inbound && (
-            <div style={{margin:"0 16px 12px",background:"rgba(77,166,255,0.06)",border:"1px solid rgba(77,166,255,0.15)",borderRadius:16,padding:"14px 16px",display:"flex",gap:12,alignItems:"center"}}>
-              <span style={{fontSize:20}}>🛬</span>
-              <div style={{flex:1}}>
-                <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>Where's my plane?</div>
-                <div style={{fontSize:12,color:"#5a5a72",marginTop:2}}>Inbound as {d.inbound}</div>
-              </div>
-              <span className={`badge ${d.inboundStatus==="Ready"?"badge-green":d.inboundStatus==="Delayed"?"badge-orange":d.inboundStatus==="Cancelled"?"badge-red":"badge-blue"}`} style={{flexShrink:0}}>{d.inboundStatus}</span>
+          {live?.onGround && (
+            <div className="alert-banner green"><span className="alert-icon">✅</span>
+              <div><div className="alert-title" style={{color:"#34d399"}}>On Ground</div><div className="alert-body">Aircraft is currently on the ground.</div></div>
             </div>
           )}
 
-          <div style={{padding:"0 16px",display:"flex",gap:8,marginBottom:20}}>
-            <button className="btn-secondary" style={{flex:1}} onClick={()=>onNavigate("map")}>View on map</button>
-            <button className="btn-secondary" style={{flex:1}} onClick={()=>onNavigate("lounges")}>Lounges</button>
+          {fl && (
+            <div className="card">
+              <div className="card-body">
+                <div style={{fontSize:11,color:"#5a5a72",textTransform:"uppercase",letterSpacing:"0.6px",marginBottom:12}}>Terminal Info</div>
+                <div style={{display:"flex"}}>
+                  {[["Terminal",dep?.terminal||"—"],["Gate",dep?.gate||"—"],["Aircraft",aircraft?.model?.split(" ").slice(-1)[0]||"—"],["Tail",aircraft?.reg||"—"]].map(([k,v])=>(
+                    <div key={k} style={{flex:1}}>
+                      <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{v}</div>
+                      <div style={{fontSize:11,color:"#5a5a72",marginTop:3}}>{k}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div style={{padding:"0 16px",marginBottom:20}}>
+            <button className="btn-secondary" style={{width:"100%"}} onClick={()=>onNavigate("map")}>View on map</button>
           </div>
         </div>
       </div>
@@ -981,58 +1114,71 @@ const TrackScreen = ({ onNavigate }) => {
   // ── Main search view ───────────────────────────────────
   return (
     <div className="screen slide-in">
-      <div style={{padding:"16px 20px 8px",fontSize:28,fontWeight:800,color:"#fff"}}>Track</div>
-      <div className="search-bar">
-        <span className="search-icon"><Icon name="track" color="#3a3a52" size={16}/></span>
-        <input
-          placeholder={mode==="flights" ? "Flight number, e.g. LH 441" : "Airport code, e.g. JFK"}
-          value={query}
-          onChange={e=>{setQuery(e.target.value);setSearching(true);}}
-          onFocus={()=>setSearching(true)}
-        />
-        {query.length>0 && <span style={{color:"#3a3a52",cursor:"pointer",fontSize:18}} onClick={()=>{setQuery("");setSearching(false);}}>×</span>}
+      <div style={{padding:"16px 20px 8px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{fontSize:28,fontWeight:800,color:"#fff"}}>Track</div>
+        <div onClick={()=>{setKeyInput(apiKey);setShowKeyModal(true);}}
+          style={{width:34,height:34,borderRadius:"50%",background:"#1e1e30",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",border:`1px solid ${apiKey?"rgba(52,211,153,0.3)":"rgba(251,146,60,0.3)"}`}}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={apiKey?"#34d399":"#fb923c"} strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
       </div>
-      <div className="seg-ctrl">
-        <button className={`seg-btn ${mode==="flights"?"active":"inactive"}`} onClick={()=>{setMode("flights");setQuery("");}}>Flights</button>
-        <button className={`seg-btn ${mode==="airports"?"active":"inactive"}`} onClick={()=>{setMode("airports");setQuery("");}}>Airports</button>
-      </div>
-      <div className="scroll" style={{marginTop:12}}>
-        {filteredSuggestions.length > 0 && (
-          <>
-            <div style={{padding:"0 20px 8px",fontSize:11,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.6px"}}>
-              {query.length > 0 ? "Results" : "Recent & Suggested"}
-            </div>
-            {filteredSuggestions.map((s,i)=>(
-              <div key={i} onClick={()=>handleSearch(s)}
-                style={{display:"flex",alignItems:"center",gap:12,padding:"12px 20px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
-                <div style={{width:38,height:38,borderRadius:10,background:"#1a1a2a",border:"1px solid rgba(255,255,255,0.07)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <Icon name={s.icon} color="#4da6ff" size={18}/>
-                </div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:15,fontWeight:700,color:"#fff"}}>{s.label}</div>
-                  <div style={{fontSize:12,color:"#5a5a72",marginTop:2}}>{s.sub}</div>
-                </div>
-                <span style={{color:"#3a3a52",fontSize:14}}>›</span>
-              </div>
-            ))}
-          </>
-        )}
-        <div style={{padding:"20px 20px 8px",fontSize:11,fontWeight:700,color:"#3a3a52",textTransform:"uppercase",letterSpacing:"0.6px"}}>Your flights today</div>
-        {[{num:"LH 441",route:"JFK → MUC",status:"cancelled"},{num:"UA 931",route:"MUC → JFK",status:"scheduled",date:"Mar 29"}].map((f,i)=>(
-          <div key={i} onClick={()=>{setSelectedFlight(f.num);setShowResult("flight");}}
-            style={{display:"flex",alignItems:"center",gap:12,padding:"12px 20px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
-            <div style={{width:38,height:38,borderRadius:10,background:f.status==="cancelled"?"rgba(255,75,75,0.1)":"rgba(77,166,255,0.1)",border:`1px solid ${f.status==="cancelled"?"rgba(255,75,75,0.2)":"rgba(77,166,255,0.2)"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <Icon name="flight" color={f.status==="cancelled"?"#ff6b6b":"#4da6ff"} size={16}/>
-            </div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:15,fontWeight:700,color:"#fff"}}>{f.num} · {f.route}</div>
-              <div style={{fontSize:12,color:"#5a5a72",marginTop:2}}>{f.date||"Today"}</div>
-            </div>
-            <FlightStatusBadge status={f.status}/>
+
+      {!apiKey && (
+        <div className="alert-banner orange" style={{cursor:"pointer",margin:"0 16px 10px"}} onClick={()=>setShowKeyModal(true)}>
+          <span className="alert-icon">🔑</span>
+          <div>
+            <div className="alert-title" style={{color:"#fb923c"}}>Add free RapidAPI key</div>
+            <div className="alert-body">Required for flight details & airport boards. Tap to set up →</div>
           </div>
-        ))}
+        </div>
+      )}
+
+      <div className="seg-ctrl">
+        <button className={`seg-btn ${mode==="flights"?"active":"inactive"}`} onClick={()=>{setMode("flights");setError(null);}}>Flights</button>
+        <button className={`seg-btn ${mode==="airports"?"active":"inactive"}`} onClick={()=>{setMode("airports");setError(null);}}>Airports</button>
+      </div>
+
+      <div style={{margin:"12px 16px 0",display:"flex",gap:8}}>
+        <div className="search-bar" style={{flex:1,margin:0}}>
+          <span className="search-icon"><Icon name={mode==="flights"?"flight":"airport"} color="#3a3a52" size={16}/></span>
+          <input placeholder={mode==="flights"?"Flight number — e.g. LH 441":"ICAO code — e.g. KJFK · EDDM · EGLL"}
+            value={query} onChange={e=>setQuery(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&handleGo()} autoCapitalize="characters"/>
+          {query && <span style={{color:"#3a3a52",cursor:"pointer",fontSize:18}} onClick={()=>{setQuery("");setError(null);}}>×</span>}
+        </div>
+        <button className="btn-secondary" style={{flexShrink:0,borderRadius:12,padding:"0 16px",cursor:"pointer",opacity:query&&!loading?1:0.4}}
+          onClick={handleGo} disabled={!query||loading}>{loading?"…":"Go"}</button>
+      </div>
+
+      {error && <div style={{margin:"10px 16px 0",padding:"12px 14px",background:"rgba(251,146,60,0.08)",border:"1px solid rgba(251,146,60,0.2)",borderRadius:12,fontSize:13,color:"#fb923c",lineHeight:1.5}}>{error}</div>}
+
+      <div className="scroll" style={{marginTop:14}}>
+        <div style={{margin:"0 16px 20px",background:"#141420",borderRadius:16,border:"1px solid rgba(255,255,255,0.06)",padding:"16px 16px"}}>
+          {mode==="flights"
+            ? <div style={{fontSize:13,color:"#8a8aa2",lineHeight:1.8}}>Type any flight number to get live status, position, gate and aircraft info.<br/><span style={{color:"#5a5a72",fontSize:12}}>Live position: OpenSky Network (free) · Schedule data: AeroDataBox (key needed)</span></div>
+            : <div style={{fontSize:13,color:"#8a8aa2",lineHeight:1.8}}>Enter a 4-letter ICAO airport code for live departures &amp; arrivals.<br/><span style={{color:"#4da6ff"}}>KJFK</span> JFK · <span style={{color:"#4da6ff"}}>EDDM</span> Munich · <span style={{color:"#4da6ff"}}>EGLL</span> Heathrow · <span style={{color:"#4da6ff"}}>LEBL</span> Barcelona<br/><span style={{color:"#5a5a72",fontSize:12}}>Requires RapidAPI key</span></div>
+          }
+        </div>
         <div style={{height:20}}/>
       </div>
+
+      {showKeyModal && (
+        <div className="modal-overlay" onClick={()=>setShowKeyModal(false)}>
+          <div className="modal-sheet" onClick={e=>e.stopPropagation()}>
+            <div className="modal-handle"/>
+            <div style={{fontSize:18,fontWeight:700,color:"#fff",marginBottom:8}}>RapidAPI Key</div>
+            <div style={{fontSize:13,color:"#8a8aa2",marginBottom:16,lineHeight:1.7}}>
+              1. Go to <span style={{color:"#4da6ff"}}>rapidapi.com</span><br/>
+              2. Search <span style={{color:"#fff"}}>"AeroDataBox"</span><br/>
+              3. Subscribe to the <span style={{color:"#34d399"}}>free tier</span> (1,000 req/month)<br/>
+              4. Copy your API key and paste below
+            </div>
+            <input className="input-field" placeholder="Paste RapidAPI key here"
+              value={keyInput} onChange={e=>setKeyInput(e.target.value)} style={{fontFamily:"monospace",fontSize:13}}/>
+            <button className="btn-primary" onClick={saveKey} disabled={!keyInput.trim()} style={{opacity:keyInput.trim()?1:0.4}}>Save Key</button>
+            {apiKey && <button className="btn-ghost" style={{marginTop:8}} onClick={()=>{saveApiKey("");setApiKey("");setShowKeyModal(false);}}>Remove Key</button>}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
