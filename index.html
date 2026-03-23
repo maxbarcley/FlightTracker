@@ -165,6 +165,15 @@ body { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
 .alt-card { background:#1a1a2a; border-radius:16px; border:1px solid rgba(255,255,255,0.07); margin-bottom:10px; padding:14px 16px; cursor:pointer; }
 .alt-card.selected { border-color:#4da6ff; background:rgba(77,166,255,0.06); }
 .esim-card { background:#1a1a2a; border-radius:16px; border:1px solid rgba(255,255,255,0.07); margin-bottom:10px; padding:16px; display:flex; align-items:center; gap:14px; cursor:pointer; }
+
+/* ── STATUS BAR ── */
+.status-bar { display:flex; justify-content:space-between; align-items:center; padding:14px 24px 4px; flex-shrink:0; }
+.status-time { font-size:15px; font-weight:600; color:#fff; letter-spacing:0.2px; }
+.status-icons { display:flex; align-items:center; gap:6px; }
+
+/* ── HOME INDICATOR ── */
+.home-indicator { display:flex; justify-content:center; padding:6px 0 8px; flex-shrink:0; }
+.home-indicator-bar { width:134px; height:5px; background:rgba(255,255,255,0.22); border-radius:3px; }
 </style>
 </head>
 <body>
@@ -286,16 +295,21 @@ const Icon = ({ name, color="#fff", size=22 }) => {
 /* ══════════════════════════════════════════════════════════
    SHARED COMPONENTS
 ══════════════════════════════════════════════════════════ */
-const StatusBar = () => (
-  <div className="status-bar">
-    <span className="status-time">9:41</span>
-    <div className="status-icons">
-      <svg width="16" height="12" viewBox="0 0 16 12" fill="#fff"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="1" width="3" height="11" rx="1"/><rect x="13.5" y="0" width="2.5" height="12" rx="1" opacity="0.3"/></svg>
-      <svg width="15" height="12" viewBox="0 0 15 12" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"><path d="M1 4.5C3.5 2 6 1 7.5 1S11.5 2 14 4.5"/><path d="M3.5 6.8C5 5.2 6.2 4.5 7.5 4.5S10 5.2 11.5 6.8"/><circle cx="7.5" cy="10" r="1.2" fill="#fff"/></svg>
-      <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#fff" strokeOpacity="0.4"/><rect x="2" y="2" width="16" height="8" rx="2" fill="#fff"/><path d="M23 4v4a2 2 0 000-4z" fill="#fff" fillOpacity="0.4"/></svg>
+const StatusBar = () => {
+  const fmt = () => { const n=new Date(); return n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0'); };
+  const [time, setTime] = useState(fmt);
+  useEffect(() => { const id=setInterval(()=>setTime(fmt()),15000); return ()=>clearInterval(id); }, []);
+  return (
+    <div className="status-bar">
+      <span className="status-time">{time}</span>
+      <div className="status-icons">
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="#fff"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="1" width="3" height="11" rx="1"/><rect x="13.5" y="0" width="2.5" height="12" rx="1" opacity="0.3"/></svg>
+        <svg width="15" height="12" viewBox="0 0 15 12" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"><path d="M1 4.5C3.5 2 6 1 7.5 1S11.5 2 14 4.5"/><path d="M3.5 6.8C5 5.2 6.2 4.5 7.5 4.5S10 5.2 11.5 6.8"/><circle cx="7.5" cy="10" r="1.2" fill="#fff"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#fff" strokeOpacity="0.4"/><rect x="2" y="2" width="16" height="8" rx="2" fill="#fff"/><path d="M23 4v4a2 2 0 000-4z" fill="#fff" fillOpacity="0.4"/></svg>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const HomeIndicator = () => (
   <div className="home-indicator"><div className="home-indicator-bar"/></div>
@@ -1188,6 +1202,7 @@ const TrackScreen = ({ onNavigate }) => {
 ══════════════════════════════════════════════════════════ */
 const LogScreen = () => {
   const [expandedYear, setExpandedYear] = useState(2026);
+  const [selFlight, setSelFlight] = useState(null);
   const totalFlights = YEAR_STATS.reduce((s,y)=>s+y.flights,0);
   const totalMiles   = YEAR_STATS.reduce((s,y)=>s+y.miles,0);
   const maxBar       = Math.max(...YEAR_STATS.map(y=>y.miles));
@@ -1277,7 +1292,7 @@ const LogScreen = () => {
                 </div>
               </div>
               {expandedYear===yearGroup.year && yearGroup.flights.map((f,i)=>(
-                <div key={i} className="log-flight-row">
+                <div key={i} className="log-flight-row" onClick={() => setSelFlight(f)}>
                   <div style={{width:36,height:36,borderRadius:10,background:"#1e1e30",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                     <Icon name="flight" color="#4da6ff" size={16}/>
                   </div>
@@ -1301,6 +1316,37 @@ const LogScreen = () => {
         })}
         <div style={{height:24}}/>
       </div>
+
+      {selFlight && (
+        <div className="modal-overlay" onClick={() => setSelFlight(null)}>
+          <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+            <div className="modal-handle"/>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+              <div>
+                <div style={{fontSize:32,fontWeight:800,color:"#fff",letterSpacing:"-1px"}}>{selFlight.from} → {selFlight.to}</div>
+                <div style={{fontSize:13,color:"#5a5a72",marginTop:4}}>{selFlight.airline} · {selFlight.num}</div>
+              </div>
+              <span className={`badge ${selFlight.class==="Business"?"badge-purple":"badge-gray"}`}>{selFlight.class}</span>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+              {[
+                ["Date",     selFlight.date],
+                ["Aircraft", selFlight.aircraft],
+                ["Distance", `${numFmt(selFlight.miles)} mi`],
+                ["Duration", selFlight.duration],
+                ["CO₂",      selFlight.co2],
+                ["Cabin",    selFlight.class],
+              ].map(([k,v])=>(
+                <div key={k} style={{background:"#1e1e30",borderRadius:12,padding:"12px 14px"}}>
+                  <div style={{fontSize:11,color:"#5a5a72",marginBottom:5}}>{k}</div>
+                  <div style={{fontSize:15,fontWeight:700,color:k==="CO₂"?"#34d399":"#fff"}}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <button className="btn-ghost" onClick={() => setSelFlight(null)}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1339,18 +1385,17 @@ const MapScreen = ({ onNavigate }) => {
   const stateRef = useRef({});
   const [active, setActive] = useState(0);
 
-  // When tab changes, nudge the globe to face the route midpoint
+  // When tab changes, smoothly animate the globe to face the route midpoint
   useEffect(() => {
-    const eg = stateRef.current.earthGroup;
-    if (!eg) return;
-    const fl  = MAP_FLIGHTS[active];
-    const a   = AIRPORTS_GEO[fl.from];
-    const b   = AIRPORTS_GEO[fl.to];
+    const s = stateRef.current;
+    if (!s.earthGroup) return;
+    const fl     = MAP_FLIGHTS[active];
+    const a      = AIRPORTS_GEO[fl.from];
+    const b      = AIRPORTS_GEO[fl.to];
     const midLng = (a.lng + b.lng) / 2;
-    // Rotate so the midpoint faces the camera (camera is at +Z)
-    // Three.js sphere: lng maps to -rotation.y offset
-    eg.rotation.y = (-midLng * Math.PI / 180) + Math.PI;
-    eg.rotation.x = (-(a.lat + b.lat) / 2) * Math.PI / 180 * 0.5;
+    s.targetRotY = (-midLng * Math.PI / 180) + Math.PI;
+    s.targetRotX = (-(a.lat + b.lat) / 2) * Math.PI / 180 * 0.5;
+    s.autoSpin   = false;
   }, [active]);
 
   useEffect(() => {
@@ -1445,24 +1490,42 @@ const MapScreen = ({ onNavigate }) => {
       earthGroup.add(new THREE.Line(geo,
         new THREE.LineBasicMaterial({ color: new THREE.Color(fl.color), transparent: true, opacity: fl.status==='cancelled' ? 0.45 : 0.9 })
       ));
-      // Animated sweep (non-cancelled only)
+      // Animated sweep + plane dot (non-cancelled only)
       if (fl.status !== 'cancelled') {
         const sweepGeo = new THREE.BufferGeometry().setFromPoints(pts.slice(0, 2));
         const sweep    = new THREE.Line(sweepGeo,
           new THREE.LineBasicMaterial({ color: new THREE.Color(fl.color) })
         );
         earthGroup.add(sweep);
+
+        // Plane dot: solid core + transparent halo
+        const flCol = new THREE.Color(fl.color);
+        const planeDot = new THREE.Mesh(
+          new THREE.SphereGeometry(0.022, 10, 10),
+          new THREE.MeshBasicMaterial({ color: flCol })
+        );
+        const planeHalo = new THREE.Mesh(
+          new THREE.SphereGeometry(0.044, 10, 10),
+          new THREE.MeshBasicMaterial({ color: flCol, transparent: true, opacity: 0.18 })
+        );
+        planeDot.visible  = false;
+        planeHalo.visible = false;
+        earthGroup.add(planeDot);
+        earthGroup.add(planeHalo);
+
         if (!stateRef.current.sweeps) stateRef.current.sweeps = [];
-        stateRef.current.sweeps.push({ sweep, pts, prog: 0, speed: 0.004 });
+        stateRef.current.sweeps.push({ sweep, pts, prog: 0, speed: 0.004, planeDot, planeHalo });
       }
     });
 
     /* ── Drag-to-rotate + zoom ────────────────────── */
     let isDragging = false, prevX = 0, prevY = 0, pinchDist = 0;
-    let autoSpin = true;
+    stateRef.current.autoSpin = true;
     const onDown = (e) => {
       if (e.touches && e.touches.length === 2) return;
-      isDragging = true; autoSpin = false;
+      isDragging = true;
+      stateRef.current.autoSpin = false;
+      stateRef.current.targetRotY = undefined; // cancel smooth animation on drag
       prevX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
       prevY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
     };
@@ -1499,10 +1562,17 @@ const MapScreen = ({ onNavigate }) => {
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      if (autoSpin) earthGroup.rotation.y += 0.0022;
+      const s = stateRef.current;
+      if (s.autoSpin) earthGroup.rotation.y += 0.0022;
 
-      if (stateRef.current.globeUniforms) {
-        stateRef.current.globeUniforms.sunDir.value.copy(calcSunDir(earthGroup));
+      // Smooth lerp toward tab target rotation
+      if (s.targetRotY !== undefined) {
+        earthGroup.rotation.y += (s.targetRotY - earthGroup.rotation.y) * 0.072;
+        earthGroup.rotation.x += (s.targetRotX - earthGroup.rotation.x) * 0.072;
+      }
+
+      if (s.globeUniforms) {
+        s.globeUniforms.sunDir.value.copy(calcSunDir(earthGroup));
       }
 
       (stateRef.current.sweeps || []).forEach(s => {
@@ -1512,6 +1582,17 @@ const MapScreen = ({ onNavigate }) => {
         if (visible.length >= 2) {
           s.sweep.geometry.setFromPoints(visible);
           s.sweep.geometry.attributes.position.needsUpdate = true;
+        }
+        // Move plane dot to leading edge of sweep
+        if (s.planeDot) {
+          const show = s.prog > 0.01 && s.prog < 1.0;
+          s.planeDot.visible  = show;
+          s.planeHalo.visible = show;
+          if (show) {
+            const pos = s.pts[Math.min(end, s.pts.length - 1)];
+            s.planeDot.position.copy(pos);
+            s.planeHalo.position.copy(pos);
+          }
         }
       });
 
@@ -1926,8 +2007,10 @@ const App = () => {
 
   return (
     <div className="device-shell">
+      <StatusBar/>
       {renderScreen()}
       {showTab && <TabBar active={tab} onTab={navigate}/>}
+      <HomeIndicator/>
     </div>
   );
 };
